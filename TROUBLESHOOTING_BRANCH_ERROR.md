@@ -26,7 +26,7 @@ Aparece el error "Branch not found"
 ### 2. VERIFICAR PERMISOS DEL TOKEN
 
 **Configuración del token en el panel:**
-- Token: `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`
+- Token: `[TU_GITHUB_TOKEN_AQUÍ]`
 - Scopes requeridos: `repo` (acceso completo)
 
 **Dónde configurar en el panel:**

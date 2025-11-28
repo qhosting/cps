@@ -19,7 +19,7 @@ echo "4. Anota qué ramas ves disponibles"
 echo ""
 
 echo "PASO 3: Verifica el token de GitHub:"
-echo "Token actual: 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"
+echo "Token actual: [TU_GITHUB_TOKEN_AQUÍ]"
 echo "Debería estar configurado en 'Ajustes' del panel"
 echo ""
 

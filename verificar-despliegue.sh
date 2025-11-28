@@ -72,7 +72,7 @@ echo "4. CONFIGURACIÓN DEL TOKEN DE GITHUB"
 echo "===================================="
 
 print_warning "Verificar en Ajustes del panel:"
-echo "   1. Token: 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"
+echo "   1. Token: [TU_GITHUB_TOKEN_AQUÍ]"
 echo "   2. Scopes requeridos: repo (acceso completo al repositorio)"
 echo "   3. El token debe tener permisos para el repositorio qhosting/cps"
 echo ""

@@ -1,0 +1,188 @@
+; ==============================================================================
+; PHP.INI OPTIMIZADO PARA PRODUCCIÓN - SISTEMA CPS EASYPANEL
+; 
+; SOLUCIONA TODOS LOS ERRORES IDENTIFICADOS:
+; - Conflictos de extensiones
+; - Problemas de ionCube
+; - Optimización para producción
+; - Configuración segura
+; ==============================================================================
+
+; ==============================================================================
+; CONFIGURACIONES BÁSICAS DE PRODUCCIÓN
+; ==============================================================================
+
+engine = On
+short_open_tag = Off
+precision = 14
+output_buffering = 4096
+zlib.output_compression = Off
+implicit_flush = Off
+unserialize_callback_func =
+; unserialize_max_depth = 4096
+serialize_precision = -1
+
+; ==============================================================================
+; CONFIGURACIONES DE LÍMITES Y MEMORIA
+; ==============================================================================
+
+max_execution_time = 120
+max_input_time = 120
+max_input_nesting_level = 64
+max_input_vars = 3000
+memory_limit = 512M
+
+; ==============================================================================
+; CONFIGURACIONES DE ERRORES Y LOGGING
+; ==============================================================================
+
+display_errors = Off
+display_startup_errors = Off
+log_errors = On
+log_errors_max_len = 1024
+ignore_repeated_errors = Off
+ignore_repeated_source = Off
+report_memleaks = Off
+display_errors = Off
+
+error_log = /var/log/php_errors.log
+error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
+
+; ==============================================================================
+; CONFIGURACIONES DE DATOS Y UPLOADS
+; ==============================================================================
+
+post_max_size = 64M
+default_mimetype = "text/html"
+default_charset = "UTF-8"
+
+file_uploads = On
+upload_max_filesize = 64M
+max_file_uploads = 20
+
+; ==============================================================================
+; CONFIGURACIONES DE SESIONES
+; ==============================================================================
+
+session.save_handler = redis
+session.save_path = "tcp://redis:6379"
+session.use_strict_mode = 1
+session.use_cookies = 1
+session.use_only_cookies = 1
+session.name = PHPSESSID
+session.auto_start = 0
+session.cookie_lifetime = 0
+session.cookie_path = /
+session.cookie_domain =
+session.cookie_httponly = 1
+session.cookie_secure = 1
+session.use_trans_sid = 0
+session.hash_function = 0
+session.hash_bits_per_character = 5
+url_rewriter.tags = "a=href,area=href,frame=src,input=src,form=fakeentry"
+
+; ==============================================================================
+; CONFIGURACIONES DE DATETIME
+; ==============================================================================
+
+date.timezone = UTC
+
+; ==============================================================================
+; CONFIGURACIONES DE OPCACHE
+; ==============================================================================
+
+opcache.enable=1
+opcache.enable_cli=0
+opcache.memory_consumption=128
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=4000
+opcache.revalidate_freq=2
+opcache.fast_shutdown=1
+opcache.enable_file_override=1
+opcache.save_comments=0
+
+; ==============================================================================
+; EXTENSIONES - IONCUBE (CONFIGURADO UNA SOLA VEZ)
+; ==============================================================================
+
+; ionCube Loader se configura en /usr/local/etc/php/conf.d/00-ioncube.ini
+; para evitar conflictos y carga múltiple
+
+; ==============================================================================
+; EXTENSIONES QUE DEBEN ESTAR HABILITADAS
+; ==============================================================================
+
+extension=pdo_mysql
+extension=pdo
+extension=curl
+extension=openssl
+extension=mbstring
+extension=json
+extension=xml
+extension=zip
+extension=gd
+extension=intl
+extension=bcmath
+extension=exif
+extension=pcntl
+extension=readline
+extension=tokenizer
+extension=fileinfo
+extension=opcache
+
+; ==============================================================================
+; CONFIGURACIONES DE SEGURIDAD
+; ==============================================================================
+
+expose_php = Off
+disable_functions = exec,passthru,shell_exec,system,proc_open,popen
+disable_classes =
+; Variables globales
+variables_order = "GPCS"
+request_order = "GP"
+register_argc_argv = Off
+always_populate_raw_post_data = -1
+
+; ==============================================================================
+; CONFIGURACIONES DE PHP-FPM (si aplica)
+; ==============================================================================
+
+[php-fpm]
+pm = dynamic
+pm.max_children = 20
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+pm.max_requests = 1000
+request_terminate_timeout = 120
+
+; ==============================================================================
+; CONFIGURACIONES ESPECÍFICAS PARA LARAVEL
+; ==============================================================================
+
+; Asegurar que las configuraciones sean compatibles con Laravel
+realpath_cache_size = 4096k
+realpath_cache_ttl = 3600
+
+; ==============================================================================
+; CONFIGURACIONES DE IONCUBE
+; ==============================================================================
+
+; La configuración de ionCube se hace en un archivo separado para evitar
+; conflictos y carga múltiple:
+; /usr/local/etc/php/conf.d/00-ioncube.ini
+; 
+; Contenido:
+; zend_extension=/usr/lib/php/extensions/ioncube_loader_lin_8.1.so
+; zend_loader.encoded_files=1
+; ioncube.loader.encoded_files=1
+
+; ==============================================================================
+; NOTAS IMPORTANTES:
+; 
+; 1. Este php.ini está optimizado para producción
+; 2. Las configuraciones de ionCube están en un archivo separado
+; 3. Las sesiones usan Redis como save_handler
+; 4. OPcache está habilitado para mejor rendimiento
+; 5. Configuraciones de seguridad estrictas
+; ==============================================================================

@@ -1,0 +1,18 @@
+📄 Extracted from page: cps/Dockerfile at master · qhosting/cps · GitHub
+URL: https://github.com/qhosting/cps/blob/master/Dockerfile
+
+Extracted content:
+```json
+{
+  "title": "cps/Dockerfile at master · qhosting/cps · GitHub",
+  "url": "https://github.com/qhosting/cps/blob/master/Dockerfile",
+  "summary": "Lines 40-50 of the Dockerfile show the installation of various dependencies. Specifically for Redis, line 41 indicates that the `redis` package is installed as part of the `apk add --no-cache` command, categorized under '# Redis y herramientas' (Redis and tools). The other lines in this range relate to database clients (mysql-client), additional dependencies (patchelf), cache cleanup, and the start of PHP extension configuration for `gd`.",
+  "key_points": [
+    "Redis is installed using `apk add --no-cache redis`.",
+    "The Redis installation is grouped under 'Redis y herramientas' (Redis and tools) in the Dockerfile comments.",
+    "This section is part of a larger `RUN` command installing various system dependencies."
+  ],
+  "relevant_links": [],
+  "file_name": "dockerfile_redis_config.json"
+}
+```

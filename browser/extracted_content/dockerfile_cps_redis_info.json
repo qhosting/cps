@@ -1,0 +1,23 @@
+📄 Extracted from page: cps/Dockerfile at master · qhosting/cps · GitHub
+URL: https://github.com/qhosting/cps/blob/master/Dockerfile
+
+Extracted content:
+```json
+{
+  "title": "cps/Dockerfile at master · qhosting/cps · GitHub",
+  "url": "https://github.com/qhosting/cps/blob/master/Dockerfile",
+  "summary": "El Dockerfile está diseñado para construir una imagen de Docker para el \"CPS System\" corregido para EasyPanel, utilizando una base `php:8.1-fpm-alpine`. Se enfoca en resolver errores comunes como \"Segmentation fault\" de Composer, conflictos de ionCube y extensiones PHP faltantes. El archivo instala numerosas dependencias del sistema, extensiones PHP, Composer, configura ionCube, Nginx y Supervisord, y establece la estructura de directorios y permisos para la aplicación, con un énfasis en la gestión de dependencias y configuración de entorno.",
+  "key_points": [
+    "**Base de imagen:** `php:8.1-fpm-alpine` para un entorno ligero y enfocado en PHP.",
+    "**Propósito:** Corregir y optimizar la construcción del \"CPS System\" para EasyPanel, abordando problemas como Composer, ionCube y extensiones PHP.",
+    "**Dependencias del sistema:** Instala una amplia gama de herramientas como `bash`, `curl`, `git`, `gcc`, `make`, `linux-headers`, `libzip-dev`, `freetype-dev`, `libjpeg-turbo-dev`, `libpng-dev`, `openssl-dev`, `libxml2-dev`, `icu-dev`, `mysql-client`, `supervisor` y `nginx`.",
+    "**Referencias a Redis:** El Dockerfile instala `redis` y `redis-tools` como dependencias del sistema a través de `apk add --no-cache` en la sección de \"Redis y herramientas\". Esto indica que la imagen tendrá la capacidad de ejecutar un servidor Redis y sus utilidades CLI.",
+    "**Extensiones PHP:** Instala varias extensiones PHP esenciales como `pdo_mysql`, `gd`, `opcache`, `zip`, `intl`, `bcmath`, `exif`, `pcntl`, `readline`, `tokenizer`, `fileinfo`, `mbstring`, `xml` y `json`.",
+    "**Configuración de ionCube:** Realiza una configuración única de ionCube loader para PHP 8.1, copiando el archivo `ioncube_loader_lin_8.1.so` y añadiéndolo a la configuración de PHP.",
+    "**Composer:** Instala Composer globalmente para la gestión de dependencias PHP, con un paso específico para instalar las dependencias antes de copiar el código de la aplicación para evitar \"segmentation faults\".",
+    "**Configuración de la aplicación:** Copia archivos de configuración personalizados para `php.ini`, `nginx.conf`, `supervisord.conf` y un `entrypoint.sh`."
+  ],
+  "relevant_links": [],
+  "file_name": "dockerfile_cps_redis_info.json"
+}
+```

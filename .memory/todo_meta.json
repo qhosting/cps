@@ -3,24 +3,38 @@
     "Coordinator": {
       "1": {
         "id": "1",
-        "content": "Verificar el estado del repositorio GitHub y sus ramas",
-        "details": "1. Verificar que el repositorio https://github.com/qhosting/cps existe y está accesible\n2. Confirmar que la rama 'main' existe en el repositorio\n3. Verificar que el token tiene permisos suficientes\n4. Documentar el estado actual del repositorio",
+        "content": "Crear estrategia de debug y deploy local para identificar todos los errores del sistema CPS",
+        "details": "1. Análisis completo de errores\n2. Setup de ambiente de desarrollo local\n3. Build y deploy local paso a paso\n4. Identificación de problemas\n5. Implementación de correcciones\n6. Testing completo\n7. Preparación de archivos corregidos para EasyPanel",
         "status": "completed",
         "priority": "high"
       },
       "2": {
         "id": "2",
-        "content": "Crear guía de verificación y troubleshooting para el panel de despliegue",
-        "details": "1. Crear script de verificación de configuración\n2. Documentar pasos para verificar la conectividad con GitHub\n3. Crear lista de verificación de configuración del panel\n4. Proporcionar comandos para verificar el estado del despliegue",
+        "content": "Setup de ambiente Docker local completo para CPS",
+        "details": "1. Crear Dockerfile completamente funcional\n2. Configurar docker-compose.yml\n3. Preparar archivos de configuración necesarios\n4. Variables de entorno\n5. Base de datos de prueba",
         "status": "completed",
         "priority": "high"
       },
       "3": {
         "id": "3",
-        "content": "Verificar la configuración del panel de despliegue",
-        "details": "1. Verificar todos los campos de configuración\n2. Confirmar que el build path está correcto\n3. Verificar que el token de GitHub esté correctamente configurado\n4. Proporcionar pasos alternativos si la configuración no funciona",
+        "content": "Identificar y resolver TODOS los problemas del sistema",
+        "details": "1. Error redis-tools\n2. Referencias de archivos faltantes\n3. Configuraciones de PHP\n4. Configuraciones de Nginx\n5. Configuraciones de Supervisor\n6. Scripts de entrada\n7. Dependencias faltantes",
         "status": "completed",
         "priority": "high"
+      },
+      "4": {
+        "id": "4",
+        "content": "Testing completo del sistema funcionando",
+        "details": "1. Build exitoso\n2. Inicio de contenedores\n3. Conectividad de base de datos\n4. Funcionalidades básicas del sistema\n5. Logs de aplicación\n6. Performance testing",
+        "status": "completed",
+        "priority": "medium"
+      },
+      "5": {
+        "id": "5",
+        "content": "Preparar archivos finales para EasyPanel",
+        "details": "1. Documentar todos los cambios\n2. Crear scripts de migración\n3. Guía de actualización paso a paso\n4. Archivos de configuración listos\n5. Documentación de troubleshooting",
+        "status": "completed",
+        "priority": "medium"
       }
     }
   }

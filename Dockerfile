@@ -109,13 +109,13 @@ RUN mkdir -p /var/www/{public,storage/{app/{public,uploads},framework/{cache,ses
 WORKDIR /var/www
 
 # Configurar php.ini para producción y evitar conflicts
-COPY php.ini.production /usr/local/etc/php/php.ini
+COPY php.ini /usr/local/etc/php/php.ini
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-custom.ini
 
 # Copiar archivos de configuración
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
-COPY docker/entrypoint-fixed.sh /entrypoint.sh
+COPY docker/entrypoint.sh /entrypoint.sh
 
 # Hacer ejecutables los scripts
 RUN chmod +x /entrypoint.sh

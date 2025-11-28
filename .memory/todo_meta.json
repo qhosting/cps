@@ -1,0 +1,69 @@
+{
+  "todos": {
+    "Coordinator": {
+      "1": {
+        "id": "1",
+        "content": "Análisis del Sistema CPS",
+        "details": "Identificar componentes principales: Sistema de licenciamiento, gestión de usuarios/resellers, pagos (Stripe/PayPal), tickets, facturas, API",
+        "status": "completed",
+        "priority": "high"
+      },
+      "2": {
+        "id": "2",
+        "content": "Preparación del entorno de desarrollo",
+        "details": "1. Configurar servidor web (Apache/Nginx) 2. Instalar PHP 8.0+ con extensiones ionCube 3. Configurar MySQL/MariaDB 4. Instalar Redis 5. Configurar Composer",
+        "status": "pending",
+        "priority": "high"
+      },
+      "3": {
+        "id": "3",
+        "content": "Configuración de base de datos",
+        "details": "1. Crear base de datos MySQL 2. Ejecutar migraciones Laravel 3. Ejecutar seeders para datos iniciales 4. Configurar usuario de base de datos",
+        "status": "pending",
+        "priority": "high"
+      },
+      "4": {
+        "id": "4",
+        "content": "Configuración de variables de entorno",
+        "details": "1. Configurar .env con credenciales reales 2. Configurar claves de API (Stripe, PayPal) 3. Configurar URLs de licenciamiento 4. Configurar servidor de email",
+        "status": "pending",
+        "priority": "medium"
+      },
+      "5": {
+        "id": "5",
+        "content": "Instalación de dependencias",
+        "details": "1. Ejecutar composer install 2. Instalar dependencias npm 3. Compilar assets frontend 4. Verificar ionCube Loader",
+        "status": "pending",
+        "priority": "medium"
+      },
+      "6": {
+        "id": "6",
+        "content": "Configuración del servidor web",
+        "details": "1. Configurar virtual host 2. Habilitar mod_rewrite 3. Configurar SSL 4. Configurar permisos de archivos",
+        "status": "pending",
+        "priority": "medium"
+      },
+      "7": {
+        "id": "7",
+        "content": "Testing y verificación del sistema",
+        "details": "1. Verificar funcionamiento del login 2. Probar creación de usuarios 3. Probar sistema de licencias 4. Verificar integraciones de pago 5. Probar sistema de tickets",
+        "status": "pending",
+        "priority": "low"
+      },
+      "8": {
+        "id": "8",
+        "content": "Configuración de seguridad",
+        "details": "1. Configurar firewall 2. Habilitar HTTPS 3. Configurar backups 4. Configurar logs de seguridad",
+        "status": "pending",
+        "priority": "medium"
+      },
+      "9": {
+        "id": "9",
+        "content": "Subida a GitHub",
+        "details": "1. Crear repositorio en GitHub 2. Configurar .gitignore 3. Subir código (excluyendo archivos sensibles) 4. Configurar workflows CI/CD",
+        "status": "in_progress",
+        "priority": "high"
+      }
+    }
+  }
+}

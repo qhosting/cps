@@ -1,0 +1,19 @@
+📄 Extracted from page: cps/Dockerfile at master · qhosting/cps · GitHub
+URL: https://github.com/qhosting/cps/blob/master/Dockerfile
+
+Extracted content:
+```json
+{
+  "title": "cps/Dockerfile at master · qhosting/cps · GitHub",
+  "url": "https://github.com/qhosting/cps/blob/master/Dockerfile",
+  "summary": "Se han extraído las líneas 24-47 del Dockerfile, que incluyen la parte final de la sección de instalación de dependencias con `apk add` y el inicio de la configuración e instalación de extensiones PHP (`docker-php-ext-configure` y `docker-php-ext-install`). Se ha verificado la sección completa de `apk add` (líneas 11-34 del Dockerfile) y se confirma que las dependencias `libedit-dev` y `pkgconfig` no están incluidas en esa lista.",
+  "key_points": [
+    "Contenido extraído del Dockerfile (líneas 24-47):",
+    "# Bibliotecas ICU\nicu-dev icu-libs \\\n# Supervisor y nginx\nsupervisor nginx \\\n# Redis y herramientas\nredis \\\n# Base de datos\nmysql-client \\\n# Dependencias adicionales\npatchelf && \\\nrm -rf /var/cache/apk/*\n# Instalar extensiones PHP correctamente\nRUN docker-php-ext-configure gd \\\n--with-freetype \\\n--with-jpeg \\\n--with-webp && \\\ndocker-php-ext-install -j$(nproc) \\\npdo_mysql \\\npdo \\\ngd \\\nopcache \\\nzip \\\nintl \\\nbcmath \\",
+    "La sección completa de dependencias `apk add` del Dockerfile no incluye `libedit-dev`.",
+    "La sección completa de dependencias `apk add` del Dockerfile no incluye `pkgconfig`."
+  ],
+  "relevant_links": [],
+  "file_name": "dockerfile_dependencies_extraction.json"
+}
+```

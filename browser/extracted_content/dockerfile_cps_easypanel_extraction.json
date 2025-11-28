@@ -1,0 +1,26 @@
+📄 Extracted from page: 
+URL: https://raw.githubusercontent.com/qhosting/cps/master/Dockerfile
+
+Extracted content:
+```json
+{
+  "title": "Dockerfile for EasyPanel - CPS System Fixed Version",
+  "url": "https://raw.githubusercontent.com/qhosting/cps/master/Dockerfile",
+  "summary": "Este Dockerfile construye una imagen Docker basada en `php:8.1-fpm-alpine` diseñada para el sistema CPS de EasyPanel. Su objetivo principal es resolver una serie de problemas comunes, incluyendo 'segmentation fault' de Composer, conflictos con ionCube, extensiones PHP faltantes, problemas de permisos/directorios, y la instalación de Supervisor. El proceso incluye la instalación de un conjunto amplio de herramientas de desarrollo, librerías, extensiones PHP (incluyendo ionCube y una instalación manual de cURL), Composer, Nginx y Supervisor. También gestiona la configuración de `php.ini`, la creación de un usuario dedicado para la aplicación (`app`), y la configuración de permisos y estructura de directorios, asegurando un entorno de ejecución estable y optimizado.",
+  "key_points": [
+    "La imagen base es `php:8.1-fpm-alpine`.",
+    "El Dockerfile fue corregido para solucionar errores como: 'segmentation fault' de Composer, conflictos de ionCube, extensiones PHP faltantes, problemas de directorios y la falta de Supervisor.",
+    "Se instala una amplia gama de herramientas y librerías del sistema a través de `apk add --no-cache`, incluyendo: bash, curl, wget, git, unzip, tar, gzip, xz, bzip2, gcc, g++, make, autoconf, automake, linux-headers, libzip-dev, oniguruma-dev, freetype-dev, libjpeg-turbo-dev, libpng-dev, libwebp-dev, imagemagick-dev, openssl-dev, openssl-libs-static, libcurl, curl-dev, libxml2-dev, libxml2, icu-dev, icu-libs, supervisor, nginx, redis, mysql-client y patchelf.",
+    "Dentro de la sección `apk add` (líneas 24-47), se verifica que los paquetes `libedit-dev` y `pkgconfig` *no* están incluidos en la lista de dependencias instaladas.",
+    "Se configuran e instalan numerosas extensiones PHP con `docker-php-ext-configure` y `docker-php-ext-install`, como pdo_mysql, gd, opcache, zip, intl, bcmath, exif, pcntl, readline, tokenizer, fileinfo, mbstring, xml y json.",
+    "Se realiza una instalación manual de cURL (versión 8.0.1) y se habilita su extensión PHP.",
+    "Se configura ionCube de forma explícita para asegurar su correcta carga y evitar conflictos, utilizando `zend_extension` y `zend_loader.encoded_files`.",
+    "Composer se instala globalmente y sus dependencias (`composer install`) se resuelven *antes* de copiar el código de la aplicación, como medida para evitar 'segmentation faults'.",
+    "Se crea un usuario (`app`) y una estructura de directorios (`/var/www/public`, `/var/www/storage`, etc.) con permisos adecuados.",
+    "Se copian archivos de configuración específicos para php.ini, nginx y supervisord, y se hace ejecutable un script `entrypoint.sh`.",
+    "El punto de entrada del contenedor es `/entrypoint.sh` y el comando por defecto ejecuta `supervisord -c /etc/supervisord.conf`."
+  ],
+  "relevant_links": [],
+  "file_name": "dockerfile_cps_easypanel_extraction.json"
+}
+```

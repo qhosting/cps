@@ -1,0 +1,24 @@
+📄 Extracted from page: GitHub - qhosting/cps
+URL: https://github.com/qhosting/cps
+
+Extracted content:
+```json
+{
+  "title": "GitHub - qhosting/cps",
+  "url": "https://github.com/qhosting/cps",
+  "summary": "El repositorio 'qhosting/cps' en GitHub está disponible y se ha accedido a su contenido. Se ha encontrado un archivo 'Dockerfile' directamente en el directorio raíz del repositorio.",
+  "key_points": [
+    "El repositorio 'qhosting/cps' en GitHub existe y está disponible públicamente.",
+    "Se ha identificado un archivo 'Dockerfile' en la raíz del repositorio (`/qhosting/cps/blob/master/Dockerfile`).",
+    "También se encuentran directorios relacionados con Docker como 'docker' y 'docker_files', y archivos como 'docker-compose.yml' y 'README-DOCKER.md', indicando un uso extensivo de Docker en el proyecto."
+  ],
+  "relevant_links": [
+    "https://github.com/qhosting/cps/blob/master/Dockerfile",
+    "https://github.com/qhosting/cps/tree/master/docker",
+    "https://github.com/qhosting/cps/tree/master/docker_files",
+    "https://github.com/qhosting/cps/blob/master/docker-compose.yml",
+    "https://github.com/qhosting/cps/blob/master/README-DOCKER.md"
+  ],
+  "file_name": "qhosting_cps_repo_dockerfile_info.json"
+}
+```

@@ -1,0 +1,26 @@
+📄 Extracted from page: Page not found · GitHub · GitHub
+URL: https://github.com/qhosting/cps/raw/main/Dockerfile
+
+Extracted content:
+```json
+{
+    "title": "Page not found · GitHub · GitHub",
+    "url": "https://github.com/qhosting/cps/raw/main/Dockerfile",
+    "summary": "The page indicates that the requested Dockerfile resource at 'https://github.com/qhosting/cps/raw/main/Dockerfile' was not found. The content displayed is a standard GitHub 'Page not found' error page, including navigation, sign-in options, search functionalities, and links to GitHub features, solutions, resources, and company information. There is no Dockerfile content available for extraction on this page.",
+    "key_points": [
+        "The page explicitly states 'Page not found · GitHub · GitHub'.",
+        "The requested resource, a Dockerfile, is not present on this URL.",
+        "No Dockerfile content, including lines 24-47, 'apk add', 'libedit-dev', or 'pkgconfig', could be found or extracted.",
+        "The page displays typical GitHub error page elements like navigation menus, sign-in prompts, and footer links."
+    ],
+    "relevant_links": [
+        "https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fqhosting%2Fcps%2Fraw%2Fmain%2FDockerfile",
+        "https://github.com/features/copilot",
+        "https://github.com/features/actions",
+        "https://github.com/why-github",
+        "https://docs.github.com",
+        "https://support.github.com?tags=dotcom-404"
+    ],
+    "file_name": "github_404_page.json"
+}
+```

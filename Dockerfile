@@ -26,8 +26,9 @@ RUN apk update && apk upgrade && \
     # Herramientas básicas
     bash curl wget git unzip tar gzip xz bzip2 \
     # Compiladores y herramientas de desarrollo
-    gcc g++ make autoconf automake \
-    # Bibliotecas de desarrollo
+    gcc g++ make autoconf automake pkgconfig \
+    # Bibliotecas de desarrollo para GD (¡CRÍTICO!)
+    libedit-dev libedit \
     linux-headers libzip-dev oniguruma-dev freetype-dev \
     # Bibliotecas de imagen
     libjpeg-turbo-dev libpng-dev libwebp-dev imagemagick-dev \
@@ -37,6 +38,8 @@ RUN apk update && apk upgrade && \
     libxml2-dev libxml2 \
     # Bibliotecas ICU
     icu-dev icu-libs \
+    # Bibliotecas adicionales para extensiones PHP
+    gmp-dev \
     # Supervisor y nginx
     supervisor nginx \
     # Redis y herramientas

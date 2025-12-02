@@ -28,7 +28,7 @@ RUN apk update && apk upgrade && \
     # Compiladores y herramientas de desarrollo
     gcc g++ make autoconf automake pkgconfig \
     # Bibliotecas de desarrollo para GD (¡CRÍTICO!)
-    libedit-dev libedit \
+    readline-dev \
     linux-headers libzip-dev oniguruma-dev freetype-dev \
     # Bibliotecas de imagen
     libjpeg-turbo-dev libpng-dev libwebp-dev imagemagick-dev \
@@ -55,6 +55,7 @@ RUN docker-php-ext-configure gd \
     --with-freetype \
     --with-jpeg \
     --with-webp && \
+    docker-php-ext-configure readline --with-readline && \
     docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     pdo \

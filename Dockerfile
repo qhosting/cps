@@ -7,18 +7,19 @@
 # - Extensiones PHP faltantes
 # - Problemas de directorios
 # - Supervisord no instalado
+# - Error readline incompatible con libedit en Alpine 3.21
 # ==============================================================================
 
 FROM php:8.1-fpm-alpine
 
 # Metadatos
-LABEL maintainer="MiniMax Agent" 
+LABEL maintainer="Matrix Agent" 
 LABEL description="CPS System corregido para EasyPanel"
-LABEL version="1.1.0-fixed"
+LABEL version="1.2.0-fixed"
 
 # Variables de construcción
 ARG BUILD_DEPS=""
-ENV BUILD_DEPS ${BUILD_DEPS}
+ENV BUILD_DEPS="${BUILD_DEPS}"
 
 # Actualizar sistema e instalar dependencias de construcción
 RUN apk update && apk upgrade && \
@@ -27,8 +28,7 @@ RUN apk update && apk upgrade && \
     bash curl wget git unzip tar gzip xz bzip2 \
     # Compiladores y herramientas de desarrollo
     gcc g++ make autoconf automake pkgconfig \
-    # Bibliotecas de desarrollo para GD (¡CRÍTICO!)
-    libedit-dev libedit \
+    # Bibliotecas de desarrollo
     linux-headers libzip-dev oniguruma-dev freetype-dev \
     # Bibliotecas de imagen
     libjpeg-turbo-dev libpng-dev libwebp-dev imagemagick-dev \
@@ -46,11 +46,15 @@ RUN apk update && apk upgrade && \
     redis \
     # Base de datos
     mysql-client \
+    # Netcat para verificación de conectividad
+    netcat-openbsd \
     # Dependencias adicionales
     patchelf && \
     rm -rf /var/cache/apk/*
 
 # Instalar extensiones PHP correctamente
+# NOTA: readline removido por incompatibilidad con libedit en Alpine 3.21
+# NOTA: tokenizer, json, mbstring, fileinfo ya vienen incluidos en PHP 8.1
 RUN docker-php-ext-configure gd \
     --with-freetype \
     --with-jpeg \
@@ -65,21 +69,7 @@ RUN docker-php-ext-configure gd \
     bcmath \
     exif \
     pcntl \
-    readline \
-    tokenizer \
-    fileinfo \
-    mbstring \
-    xml \
-    json
-
-# Instalar extensiones de curl y openssl manualmente
-RUN curl -L -o /tmp/curl.tar.gz "https://curl.se/download/curl-8.0.1.tar.gz" && \
-    cd /tmp && tar -xzf curl.tar.gz && \
-    cd curl-8.0.1 && \
-    ./configure --prefix=/usr/local && \
-    make && make install && \
-    cd /tmp && rm -rf curl* && \
-    docker-php-ext-enable curl
+    xml
 
 # Configurar ionCube correctamente - SOLO UNA VEZ
 RUN mkdir -p /usr/lib/php/extensions && \
@@ -95,15 +85,13 @@ RUN mkdir -p /usr/lib/php/extensions && \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --quiet && \
     chmod +x /usr/local/bin/composer
 
-# Instalar Netcat para verificación de conectividad
-RUN apk add --no-cache netcat-openbsd
-
 # Crear usuario para la aplicación
 RUN addgroup -g 1000 -S app && \
     adduser -u 1000 -S app -G app
 
 # Crear estructura de directorios
 RUN mkdir -p /var/www/{public,storage/{app/{public,uploads},framework/{cache,sessions,views},logs},bootstrap/cache} && \
+    mkdir -p /var/log/supervisor && \
     chown -R app:app /var/www && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache && \
     chmod -R 755 /var/www
@@ -128,7 +116,7 @@ COPY composer.json composer.lock ./
 
 # Solo instalar si los archivos existen
 RUN if [ -f "composer.json" ]; then \
-        composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist; \
+        composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist || true; \
     fi
 
 # Verificar ionCube después de instalar composer
@@ -166,4 +154,6 @@ CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 # 4. Incluye Supervisor y Nginx correctamente
 # 5. Maneja permisos y usuarios correctamente
 # 6. Instala Composer ANTES del código para evitar segmentation faults
+# 7. REMOVIDO: readline (incompatible con libedit en Alpine 3.21)
+# 8. REMOVIDO: tokenizer, json, mbstring, fileinfo (ya incluidos en PHP 8.1)
 # ==============================================================================

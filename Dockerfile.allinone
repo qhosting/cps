@@ -31,7 +31,6 @@ RUN apk update && apk upgrade && \
     # Compiladores y herramientas de desarrollo
     gcc g++ make autoconf automake pkgconfig \
     # Bibliotecas de desarrollo
-    libedit-dev libedit \
     linux-headers libzip-dev oniguruma-dev freetype-dev \
     # Bibliotecas de imagen
     libjpeg-turbo-dev libpng-dev libwebp-dev imagemagick-dev \
@@ -63,6 +62,8 @@ RUN cp /usr/share/zoneinfo/UTC /etc/localtime && \
     echo "UTC" > /etc/timezone
 
 # Instalar extensiones PHP
+# NOTA: readline removido por incompatibilidad con libedit en Alpine 3.21
+# NOTA: tokenizer, json, mbstring, fileinfo ya vienen incluidos en PHP 8.1
 RUN docker-php-ext-configure gd \
     --with-freetype \
     --with-jpeg \
@@ -77,9 +78,6 @@ RUN docker-php-ext-configure gd \
     bcmath \
     exif \
     pcntl \
-    readline \
-    fileinfo \
-    mbstring \
     xml
 
 # Instalar ionCube Loader

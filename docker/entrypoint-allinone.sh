@@ -280,6 +280,25 @@ main() {
         php -v 2>&1 | head -5
     fi
     
+    # Diagnóstico de ionCube y archivos encriptados
+    log_info "Diagnóstico de archivos encriptados..."
+    if head -c 100 /var/www/artisan 2>/dev/null | grep -q "ionCube"; then
+        log_warning "El archivo artisan está ENCRIPTADO con ionCube"
+        log_warning "Los workers de Laravel requieren licencia ionCube válida"
+    else
+        log_success "El archivo artisan NO está encriptado"
+    fi
+    
+    # Test de PHP artisan básico
+    log_info "Probando PHP artisan..."
+    cd /var/www
+    if php artisan --version 2>&1; then
+        log_success "PHP artisan funciona correctamente"
+    else
+        log_error "ERROR ejecutando PHP artisan:"
+        php artisan --version 2>&1 || true
+    fi
+    
     # Verificar configuración de Nginx
     log_info "Verificando configuración de Nginx..."
     mkdir -p /run/nginx /var/log/nginx

@@ -18,7 +18,7 @@ LABEL version="1.1.0-fixed"
 
 # Variables de construcción
 ARG BUILD_DEPS=""
-ENV BUILD_DEPS ${BUILD_DEPS}
+ENV BUILD_DEPS=${BUILD_DEPS}
 
 # Actualizar sistema e instalar dependencias de construcción
 RUN apk update && apk upgrade && \
@@ -28,7 +28,7 @@ RUN apk update && apk upgrade && \
     # Compiladores y herramientas de desarrollo
     gcc g++ make autoconf automake pkgconfig \
     # Bibliotecas de desarrollo para GD (¡CRÍTICO!)
-    libedit-dev libedit \
+    libedit-dev \
     linux-headers libzip-dev oniguruma-dev freetype-dev \
     # Bibliotecas de imagen
     libjpeg-turbo-dev libpng-dev libwebp-dev imagemagick-dev \
@@ -55,6 +55,7 @@ RUN docker-php-ext-configure gd \
     --with-freetype \
     --with-jpeg \
     --with-webp && \
+    docker-php-ext-configure readline --with-libedit && \
     docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     pdo \
@@ -101,6 +102,12 @@ RUN apk add --no-cache netcat-openbsd
 # Crear usuario para la aplicación
 RUN addgroup -g 1000 -S app && \
     adduser -u 1000 -S app -G app
+
+# Configurar PHP-FPM para usar el usuario app
+RUN sed -i 's/user = www-data/user = app/g' /usr/local/etc/php-fpm.d/www.conf && \
+    sed -i 's/group = www-data/group = app/g' /usr/local/etc/php-fpm.d/www.conf && \
+    sed -i 's/listen.owner = www-data/listen.owner = app/g' /usr/local/etc/php-fpm.d/www.conf && \
+    sed -i 's/listen.group = www-data/listen.group = app/g' /usr/local/etc/php-fpm.d/www.conf
 
 # Crear estructura de directorios
 RUN mkdir -p /var/www/{public,storage/{app/{public,uploads},framework/{cache,sessions,views},logs},bootstrap/cache} && \

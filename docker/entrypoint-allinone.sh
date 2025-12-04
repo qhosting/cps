@@ -273,10 +273,21 @@ main() {
     
     # Verificar ionCube
     log_info "Verificando ionCube Loader..."
-    if php -v | grep -q "ionCube"; then
+    if php -v 2>&1 | grep -qi "ioncube"; then
         log_success "ionCube Loader activo"
     else
-        log_warning "ionCube Loader no detectado"
+        log_error "ionCube Loader NO está cargado - verificar configuración"
+        php -v 2>&1 | head -5
+    fi
+    
+    # Verificar configuración de Nginx
+    log_info "Verificando configuración de Nginx..."
+    mkdir -p /run/nginx /var/log/nginx
+    if nginx -t 2>&1; then
+        log_success "Configuración de Nginx válida"
+    else
+        log_error "Error en configuración de Nginx:"
+        nginx -t 2>&1
     fi
     
     # Inicializar MariaDB

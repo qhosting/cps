@@ -80,15 +80,22 @@ RUN docker-php-ext-configure gd \
     pcntl \
     xml
 
-# Instalar ionCube Loader
-RUN mkdir -p /usr/lib/php/extensions && \
+# Instalar extensión Redis para PHP (necesaria para sesiones)
+RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS && \
+    pecl install redis && \
+    docker-php-ext-enable redis && \
+    apk del .phpize-deps
+
+# Instalar ionCube Loader en la ruta correcta de extensiones PHP
+RUN PHP_EXT_DIR=$(php -r "echo ini_get('extension_dir');") && \
+    echo "PHP Extension Directory: $PHP_EXT_DIR" && \
     cd /tmp && \
     curl -L -o ioncube.tar.gz "https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz" && \
     tar -xzf ioncube.tar.gz && \
-    cp ioncube/ioncube_loader_lin_8.1.so /usr/lib/php/extensions/ && \
-    rm -rf ioncube* /tmp/ioncube && \
-    echo "zend_extension=/usr/lib/php/extensions/ioncube_loader_lin_8.1.so" > /usr/local/etc/php/conf.d/00-ioncube.ini && \
-    echo "zend_loader.encoded_files=1" >> /usr/local/etc/php/conf.d/00-ioncube.ini
+    cp ioncube/ioncube_loader_lin_8.1.so "$PHP_EXT_DIR/" && \
+    rm -rf ioncube* && \
+    echo "zend_extension=ioncube_loader_lin_8.1.so" > /usr/local/etc/php/conf.d/00-ioncube.ini && \
+    echo "ioncube.loader.encoded_files=1" >> /usr/local/etc/php/conf.d/00-ioncube.ini
 
 # Instalar Composer - descarga directa para evitar conflicto con ionCube
 RUN curl -sS https://getcomposer.org/download/latest-2.x/composer.phar -o /usr/local/bin/composer && \

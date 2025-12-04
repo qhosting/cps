@@ -90,8 +90,8 @@ RUN mkdir -p /usr/lib/php/extensions && \
     echo "zend_extension=/usr/lib/php/extensions/ioncube_loader_lin_8.1.so" > /usr/local/etc/php/conf.d/00-ioncube.ini && \
     echo "zend_loader.encoded_files=1" >> /usr/local/etc/php/conf.d/00-ioncube.ini
 
-# Instalar Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --quiet && \
+# Instalar Composer - descarga directa para evitar conflicto con ionCube
+RUN curl -sS https://getcomposer.org/download/latest-2.x/composer.phar -o /usr/local/bin/composer && \
     chmod +x /usr/local/bin/composer
 
 # Crear usuario para la aplicación

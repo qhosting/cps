@@ -98,8 +98,15 @@ RUN curl -sS https://getcomposer.org/download/latest-2.x/composer.phar -o /usr/l
 RUN addgroup -g 1000 -S app && \
     adduser -u 1000 -S app -G app
 
-# Crear estructura de directorios
-RUN mkdir -p /var/www/{public,storage/{app/{public,uploads},framework/{cache,sessions,views},logs},bootstrap/cache} && \
+# Crear estructura de directorios (sintaxis compatible con sh)
+RUN mkdir -p /var/www/public && \
+    mkdir -p /var/www/storage/app/public && \
+    mkdir -p /var/www/storage/app/uploads && \
+    mkdir -p /var/www/storage/framework/cache && \
+    mkdir -p /var/www/storage/framework/sessions && \
+    mkdir -p /var/www/storage/framework/views && \
+    mkdir -p /var/www/storage/logs && \
+    mkdir -p /var/www/bootstrap/cache && \
     mkdir -p /var/lib/mysql && \
     mkdir -p /var/log/mysql && \
     mkdir -p /var/log/supervisor && \

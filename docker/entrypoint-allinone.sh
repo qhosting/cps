@@ -271,6 +271,30 @@ main() {
     echo "=============================================="
     echo ""
     
+    # DIAGNÓSTICO CRÍTICO: Verificar sistema operativo
+    log_info "Verificando sistema operativo..."
+    if [ -f /etc/os-release ]; then
+        OS_NAME=$(grep -E '^(NAME|ID)=' /etc/os-release | head -2)
+        echo "$OS_NAME"
+        
+        if grep -qi 'alpine' /etc/os-release; then
+            log_error "¡¡¡ALERTA!!! Sistema es ALPINE Linux"
+            log_error "ionCube NO es compatible con Alpine (usa musl libc)"
+            log_error "EasyPanel usó caché - ¡FORZAR REBUILD SIN CACHÉ!"
+        elif grep -qi 'debian' /etc/os-release; then
+            log_success "Sistema es Debian (glibc) - ionCube compatible"
+        fi
+    fi
+    
+    # Verificar libc
+    log_info "Verificando libc..."
+    if ldd --version 2>&1 | grep -qi 'musl'; then
+        log_error "libc: musl - INCOMPATIBLE con ionCube"
+    elif ldd --version 2>&1 | grep -qi 'glibc\|GLIBC\|GNU'; then
+        log_success "libc: glibc - Compatible con ionCube"
+    fi
+    ldd --version 2>&1 | head -1 || true
+    
     # Verificar ionCube
     log_info "Verificando ionCube Loader..."
     if php -v 2>&1 | grep -qi "ioncube"; then
@@ -292,11 +316,39 @@ main() {
     # Test de PHP artisan básico
     log_info "Probando PHP artisan..."
     cd /var/www
-    if php artisan --version 2>&1; then
-        log_success "PHP artisan funciona correctamente"
+    
+    # Capturar output y código de salida
+    set +e  # No salir en error
+    ARTISAN_OUTPUT=$(php artisan --version 2>&1)
+    ARTISAN_EXIT=$?
+    set -e
+    
+    if [ $ARTISAN_EXIT -eq 0 ]; then
+        log_success "PHP artisan funciona: $ARTISAN_OUTPUT"
+    elif [ $ARTISAN_EXIT -eq 139 ]; then
+        log_error "SIGSEGV (code 139) - Segmentation Fault"
+        log_error "Esto indica incompatibilidad binaria ionCube/musl"
+        log_error "EasyPanel NO hizo rebuild - FORZAR REBUILD SIN CACHÉ"
+    elif [ $ARTISAN_EXIT -eq 134 ]; then
+        log_error "SIGABRT (code 134) - Aborted"
+        log_error "Posible corrupción de ionCube loader"
     else
-        log_error "ERROR ejecutando PHP artisan:"
-        php artisan --version 2>&1 || true
+        log_error "PHP artisan falló (exit code: $ARTISAN_EXIT)"
+        log_error "Output: $ARTISAN_OUTPUT"
+    fi
+    
+    # Verificar un archivo PHP encriptado
+    log_info "Probando archivo PHP encriptado..."
+    ENCRYPTED_FILE=$(find /var/www/app -name "*.php" -type f 2>/dev/null | head -1)
+    if [ -n "$ENCRYPTED_FILE" ] && head -c 20 "$ENCRYPTED_FILE" 2>/dev/null | grep -q "<?php //00"; then
+        log_info "Probando carga de: $ENCRYPTED_FILE"
+        set +e
+        php -r "include '$ENCRYPTED_FILE';" 2>&1 | head -3 || true
+        ENC_EXIT=$?
+        set -e
+        if [ $ENC_EXIT -eq 139 ] || [ $ENC_EXIT -eq 134 ]; then
+            log_error "ionCube NO puede cargar archivos encriptados - SIGSEGV"
+        fi
     fi
     
     # Verificar configuración de Nginx

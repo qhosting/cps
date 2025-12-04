@@ -1,27 +1,29 @@
 # ==============================================================================
-# DOCKERFILE CORREGIDO PARA EASYPANEL - SISTEMA CPS
+# DOCKERFILE ALL-IN-ONE PARA EASYPANEL - SISTEMA CPS
 # 
-# SOLUCIONA TODOS LOS ERRORES IDENTIFICADOS:
-# - Segmentation fault de Composer
-# - Conflictos de ionCube
-# - Extensiones PHP faltantes
-# - Problemas de directorios
-# - Supervisord no instalado
-# - Error readline incompatible con libedit en Alpine 3.21
+# Este Dockerfile incluye TODO en un solo contenedor:
+# - PHP 8.1 + FPM
+# - Nginx
+# - MySQL 8.0
+# - Redis
+# - ionCube Loader
+# - Laravel Queue Worker
+# - Laravel Scheduler
 # ==============================================================================
 
 FROM php:8.1-fpm-alpine
 
-# Metadatos
 LABEL maintainer="Matrix Agent" 
-LABEL description="CPS System corregido para EasyPanel"
-LABEL version="1.2.0-fixed"
+LABEL description="CPS System All-in-One para EasyPanel"
+LABEL version="2.0.0-allinone"
 
-# Variables de construcción
-ARG BUILD_DEPS=""
-ENV BUILD_DEPS="${BUILD_DEPS}"
+# Variables de entorno para MySQL
+ENV MYSQL_ROOT_PASSWORD=cps_root_password
+ENV MYSQL_DATABASE=cps_database
+ENV MYSQL_USER=cps_user
+ENV MYSQL_PASSWORD=cps_password_123
 
-# Actualizar sistema e instalar dependencias de construcción
+# Actualizar sistema e instalar TODAS las dependencias
 RUN apk update && apk upgrade && \
     apk add --no-cache \
     # Herramientas básicas
@@ -38,21 +40,28 @@ RUN apk update && apk upgrade && \
     libxml2-dev libxml2 \
     # Bibliotecas ICU
     icu-dev icu-libs \
-    # Bibliotecas adicionales para extensiones PHP
+    # Bibliotecas adicionales
     gmp-dev \
-    # Supervisor y nginx
-    supervisor nginx \
-    # Redis y herramientas
+    # ===== SERVICIOS ALL-IN-ONE =====
+    # Supervisor para gestionar todos los procesos
+    supervisor \
+    # Nginx como servidor web
+    nginx \
+    # Redis para caché y sesiones
     redis \
-    # Base de datos
-    mysql-client \
+    # MariaDB (compatible MySQL) - más ligero que MySQL oficial
+    mariadb mariadb-client mariadb-common \
     # Netcat para verificación de conectividad
     netcat-openbsd \
-    # Dependencias adicionales
-    patchelf && \
+    # Herramientas adicionales
+    patchelf tzdata && \
     rm -rf /var/cache/apk/*
 
-# Instalar extensiones PHP correctamente
+# Configurar timezone
+RUN cp /usr/share/zoneinfo/UTC /etc/localtime && \
+    echo "UTC" > /etc/timezone
+
+# Instalar extensiones PHP
 # NOTA: readline removido por incompatibilidad con libedit en Alpine 3.21
 # NOTA: tokenizer, json, mbstring, fileinfo ya vienen incluidos en PHP 8.1
 RUN docker-php-ext-configure gd \
@@ -71,7 +80,7 @@ RUN docker-php-ext-configure gd \
     pcntl \
     xml
 
-# Configurar ionCube correctamente - SOLO UNA VEZ
+# Instalar ionCube Loader
 RUN mkdir -p /usr/lib/php/extensions && \
     cd /tmp && \
     curl -L -o ioncube.tar.gz "https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz" && \
@@ -91,69 +100,61 @@ RUN addgroup -g 1000 -S app && \
 
 # Crear estructura de directorios
 RUN mkdir -p /var/www/{public,storage/{app/{public,uploads},framework/{cache,sessions,views},logs},bootstrap/cache} && \
+    mkdir -p /var/lib/mysql && \
+    mkdir -p /var/log/mysql && \
     mkdir -p /var/log/supervisor && \
+    mkdir -p /var/log/nginx && \
+    mkdir -p /var/log/redis && \
+    mkdir -p /run/mysqld && \
+    mkdir -p /run/nginx && \
+    chown -R mysql:mysql /var/lib/mysql /var/log/mysql /run/mysqld && \
     chown -R app:app /var/www && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache && \
     chmod -R 755 /var/www
 
-# Cambiar al directorio de trabajo
+# Directorio de trabajo
 WORKDIR /var/www
 
-# Configurar php.ini para producción y evitar conflicts
+# Copiar configuraciones PHP
 COPY php.ini /usr/local/etc/php/php.ini
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-custom.ini
 
-# Copiar archivos de configuración
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
-COPY docker/supervisord.conf /etc/supervisord.conf
-COPY docker/entrypoint.sh /entrypoint.sh
-
-# Hacer ejecutables los scripts
-RUN chmod +x /entrypoint.sh
-
-# Instalar dependencias de Composer ANTES de copiar el código
+# Copiar archivos de la aplicación
 COPY composer.json composer.lock ./
 
-# Solo instalar si los archivos existen
+# Instalar dependencias de Composer
 RUN if [ -f "composer.json" ]; then \
         composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist || true; \
     fi
 
-# Verificar ionCube después de instalar composer
+# Verificar ionCube
 RUN php -v
 
-# Copiar código de la aplicación
+# Copiar todo el código
 COPY . .
+
+# Copiar configuraciones all-in-one
+COPY docker/supervisord-allinone.conf /etc/supervisord.conf
+COPY docker/nginx-allinone.conf /etc/nginx/http.d/default.conf
+COPY docker/entrypoint-allinone.sh /entrypoint.sh
+
+# Hacer ejecutables los scripts
+RUN chmod +x /entrypoint.sh
 
 # Configurar permisos finales
 RUN chown -R app:app /var/www && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache && \
     chmod -R 755 /var/www/public
 
-# Cambiar al usuario de la aplicación
-USER app
-
-# Exponer puerto
+# Exponer puerto 80
 EXPOSE 80
 
-# Verificar que el archivo artisan existe antes de iniciar
-RUN if [ ! -f "artisan" ]; then echo "WARNING: artisan file not found!"; fi
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost/ || exit 1
 
 # Punto de entrada
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 
 # Comando por defecto
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-# ==============================================================================
-# NOTAS IMPORTANTES:
-# 
-# 1. Este Dockerfile corrige TODOS los errores identificados
-# 2. Instala extensiones PHP correctamente sin conflictos
-# 3. Configura ionCube SOLO UNA VEZ para evitar doble carga
-# 4. Incluye Supervisor y Nginx correctamente
-# 5. Maneja permisos y usuarios correctamente
-# 6. Instala Composer ANTES del código para evitar segmentation faults
-# 7. REMOVIDO: readline (incompatible con libedit en Alpine 3.21)
-# 8. REMOVIDO: tokenizer, json, mbstring, fileinfo (ya incluidos en PHP 8.1)
-# ==============================================================================
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]

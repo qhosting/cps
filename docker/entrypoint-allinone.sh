@@ -268,7 +268,7 @@ main() {
     echo ""
     echo "=============================================="
     echo "   CPS SYSTEM - ALL-IN-ONE PARA EASYPANEL"
-    echo "   BUILD: v3.3.0 - 2025-12-05 - PHP 8.3 ionCube Fix"
+    echo "   BUILD: v3.4.0 - 2025-12-05 - Healthcheck Fix"
     echo "=============================================="
     echo ""
     

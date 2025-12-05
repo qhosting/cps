@@ -20,7 +20,7 @@ FROM php:8.3-fpm-bookworm
 
 LABEL maintainer="Matrix Agent" 
 LABEL description="CPS System All-in-One para EasyPanel"
-LABEL version="3.3.0-php83-ioncube-fix"
+LABEL version="3.4.0-healthcheck-fix"
 
 # Evitar prompts interactivos durante la instalación
 ENV DEBIAN_FRONTEND=noninteractive
@@ -202,9 +202,9 @@ RUN chown -R app:app /var/www && \
 # Exponer puerto 80
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-    CMD curl -f http://localhost/ || exit 1
+# Health check - usa /health que es atendido directamente por Nginx (no pasa por Laravel)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
+    CMD curl -f http://localhost/health || exit 1
 
 # Punto de entrada
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]

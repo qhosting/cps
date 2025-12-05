@@ -268,9 +268,30 @@ main() {
     echo ""
     echo "=============================================="
     echo "   CPS SYSTEM - ALL-IN-ONE PARA EASYPANEL"
-    echo "   BUILD: v3.1.0 - 2025-12-05 - Commit 618bd31+"
+    echo "   BUILD: v3.2.0 - 2025-12-05 - Vendor Fix"
     echo "=============================================="
     echo ""
+    
+    # =====================================================
+    # VERIFICACIÓN CRÍTICA DE VENDOR/
+    # =====================================================
+    log_info ">>> VERIFICACIÓN CRÍTICA: vendor/ <<<"
+    if [ -f "/var/www/vendor/autoload.php" ]; then
+        log_success "vendor/autoload.php EXISTE"
+        ls -la /var/www/vendor/autoload.php
+        log_info "Conteo de paquetes en vendor/:"
+        ls -1 /var/www/vendor/ | wc -l
+    else
+        log_error "¡¡¡CRÍTICO!!! vendor/autoload.php NO EXISTE"
+        log_error "El directorio vendor/ no fue creado durante el build"
+        log_error "Verificar que composer install se ejecutó correctamente"
+        ls -la /var/www/ | head -20
+        if [ -d "/var/www/vendor" ]; then
+            log_warning "El directorio vendor/ existe pero está incompleto:"
+            ls -la /var/www/vendor/ | head -10
+        fi
+    fi
+    echo "---"
     
     # Test inmediato de PHP para diagnóstico
     log_info ">>> TEST INMEDIATO PHP <<<"
@@ -345,29 +366,46 @@ main() {
         
         # SIEMPRE ejecutar diagnóstico detallado si falla
         log_info "========================================"
-        log_info "=== DIAGNÓSTICO DETALLADO (BUILD v3.1) ==="
+        log_info "=== DIAGNÓSTICO DETALLADO (BUILD v3.2) ==="
         log_info "========================================"
+        
+        # Test 0: Verificar vendor existe
+        log_info "[TEST 0] Verificando vendor/ existe..."
+        if [ -d "/var/www/vendor" ]; then
+            log_success "Directorio vendor/ existe"
+            ls -la /var/www/vendor/ | head -5
+        else
+            log_error "Directorio vendor/ NO EXISTE - composer install falló"
+        fi
         
         # Test 1: Probar autoload de Composer
         log_info "[TEST 1] Probando vendor/autoload.php..."
-        php -r "require '/var/www/vendor/autoload.php'; echo 'Autoload: OK' . PHP_EOL;" 2>&1 || echo "Autoload: FALLO"
+        if [ -f "/var/www/vendor/autoload.php" ]; then
+            php -r "require '/var/www/vendor/autoload.php'; echo 'Autoload: OK' . PHP_EOL;" 2>&1 || echo "Autoload: FALLO al ejecutar"
+        else
+            log_error "vendor/autoload.php NO EXISTE"
+        fi
         
         # Test 2: Verificar archivo bootstrap
         log_info "[TEST 2] Verificando bootstrap/app.php existe..."
         ls -la /var/www/bootstrap/app.php 2>&1 || echo "bootstrap/app.php NO EXISTE"
         
-        # Test 3: Probar cargar bootstrap
+        # Test 3: Probar cargar bootstrap (solo si vendor existe)
         log_info "[TEST 3] Cargando bootstrap/app.php..."
-        php -r "
-            error_reporting(E_ALL);
-            ini_set('display_errors', 1);
-            ini_set('display_startup_errors', 1);
-            echo 'Iniciando carga...' . PHP_EOL;
-            require '/var/www/vendor/autoload.php';
-            echo 'Autoload cargado.' . PHP_EOL;
-            \$app = require_once '/var/www/bootstrap/app.php';
-            echo 'Bootstrap: OK' . PHP_EOL;
-        " 2>&1 || echo "Bootstrap: FALLO"
+        if [ -f "/var/www/vendor/autoload.php" ]; then
+            php -r "
+                error_reporting(E_ALL);
+                ini_set('display_errors', 1);
+                ini_set('display_startup_errors', 1);
+                echo 'Iniciando carga...' . PHP_EOL;
+                require '/var/www/vendor/autoload.php';
+                echo 'Autoload cargado.' . PHP_EOL;
+                \$app = require_once '/var/www/bootstrap/app.php';
+                echo 'Bootstrap: OK' . PHP_EOL;
+            " 2>&1 || echo "Bootstrap: FALLO"
+        else
+            log_error "No se puede probar bootstrap sin vendor/autoload.php"
+        fi
         
         # Test 4: Ver log de Laravel
         log_info "[TEST 4] Verificando laravel.log..."
@@ -404,8 +442,13 @@ main() {
     if [ -n "$ENCRYPTED_FILE" ] && head -c 20 "$ENCRYPTED_FILE" 2>/dev/null | grep -q "<?php //00"; then
         log_info "Probando carga de: $ENCRYPTED_FILE"
         set +e
-        php -r "require '/var/www/vendor/autoload.php'; include '$ENCRYPTED_FILE';" 2>&1 | head -10
-        ENC_EXIT=$?
+        if [ -f "/var/www/vendor/autoload.php" ]; then
+            php -r "require '/var/www/vendor/autoload.php'; include '$ENCRYPTED_FILE';" 2>&1 | head -10
+            ENC_EXIT=$?
+        else
+            log_warning "No se puede probar archivo encriptado sin vendor/"
+            ENC_EXIT=1
+        fi
         set -e
         if [ $ENC_EXIT -eq 0 ]; then
             log_success "Archivo encriptado cargado correctamente"

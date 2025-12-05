@@ -18,7 +18,7 @@ FROM php:8.1-fpm-bullseye
 
 LABEL maintainer="Matrix Agent" 
 LABEL description="CPS System All-in-One para EasyPanel"
-LABEL version="3.0.0-debian"
+LABEL version="3.2.0-debian-vendor-fix"
 
 # Evitar prompts interactivos durante la instalación
 ENV DEBIAN_FRONTEND=noninteractive
@@ -139,19 +139,46 @@ WORKDIR /var/www
 COPY php.ini /usr/local/etc/php/php.ini
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-custom.ini
 
-# Copiar archivos de la aplicación
-COPY composer.json composer.lock ./
+# ==============================================================================
+# COMPOSER INSTALL - SOLUCION PARA IONCUBE
+# ==============================================================================
+# 1. Primero copiamos TODO el código (necesario para que composer pueda resolver)
+# 2. Ejecutamos composer install SIN scripts (evita ejecutar artisan durante build)
+# 3. Luego generamos el autoloader optimizado
+# ==============================================================================
 
-# Instalar dependencias de Composer
-RUN if [ -f "composer.json" ]; then \
-        composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist || true; \
-    fi
-
-# Verificar ionCube
-RUN php -v && echo "=== ionCube Check ===" && php -m | grep -i ioncube || echo "ionCube not in modules"
-
-# Copiar todo el código
+# Copiar todo el código primero
 COPY . .
+
+# Verificar ionCube está funcionando
+RUN echo "=== Verificando ionCube ===" && \
+    php -v && \
+    php -m | grep -i ioncube && \
+    echo "=== ionCube OK ==="
+
+# Instalar dependencias de Composer SIN SCRIPTS
+# --no-scripts: Evita ejecutar 'php artisan package:discover' que falla sin DB
+# --no-dev: No instalar dependencias de desarrollo
+# --optimize-autoloader: Optimizar el autoloader
+RUN echo "=== Instalando dependencias de Composer ===" && \
+    composer install \
+        --no-dev \
+        --no-scripts \
+        --no-interaction \
+        --prefer-dist \
+        --optimize-autoloader \
+        --ignore-platform-reqs && \
+    echo "=== Composer install completado ===" && \
+    ls -la vendor/ && \
+    echo "=== vendor/autoload.php existe: ===" && \
+    ls -la vendor/autoload.php
+
+# Verificar que vendor existe
+RUN if [ ! -f "vendor/autoload.php" ]; then \
+        echo "ERROR: vendor/autoload.php NO EXISTE!" && exit 1; \
+    else \
+        echo "OK: vendor/autoload.php existe"; \
+    fi
 
 # Copiar configuraciones all-in-one
 COPY docker/supervisord-allinone.conf /etc/supervisor/conf.d/supervisord.conf

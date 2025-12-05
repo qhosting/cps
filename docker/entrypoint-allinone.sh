@@ -317,24 +317,76 @@ main() {
     log_info "Probando PHP artisan..."
     cd /var/www
     
-    # Capturar output y código de salida
+    # Capturar output y código de salida (stderr y stdout separados)
     set +e  # No salir en error
-    ARTISAN_OUTPUT=$(php artisan --version 2>&1)
+    
+    # Guardar output en archivo temporal para mejor captura
+    php artisan --version > /tmp/artisan_out.txt 2> /tmp/artisan_err.txt
     ARTISAN_EXIT=$?
+    ARTISAN_STDOUT=$(cat /tmp/artisan_out.txt 2>/dev/null || echo "")
+    ARTISAN_STDERR=$(cat /tmp/artisan_err.txt 2>/dev/null || echo "")
+    
     set -e
     
     if [ $ARTISAN_EXIT -eq 0 ]; then
-        log_success "PHP artisan funciona: $ARTISAN_OUTPUT"
+        log_success "PHP artisan funciona: $ARTISAN_STDOUT"
     elif [ $ARTISAN_EXIT -eq 139 ]; then
         log_error "SIGSEGV (code 139) - Segmentation Fault"
         log_error "Esto indica incompatibilidad binaria ionCube/musl"
-        log_error "EasyPanel NO hizo rebuild - FORZAR REBUILD SIN CACHÉ"
     elif [ $ARTISAN_EXIT -eq 134 ]; then
         log_error "SIGABRT (code 134) - Aborted"
-        log_error "Posible corrupción de ionCube loader"
+    elif [ $ARTISAN_EXIT -eq 255 ]; then
+        log_error "Error fatal PHP (code 255)"
+        if [ -n "$ARTISAN_STDOUT" ]; then
+            log_error "STDOUT: $ARTISAN_STDOUT"
+        fi
+        if [ -n "$ARTISAN_STDERR" ]; then
+            log_error "STDERR: $ARTISAN_STDERR"
+        fi
+        
+        # Diagnóstico adicional para error 255
+        log_info "=== DIAGNÓSTICO DETALLADO ==="
+        
+        # Probar autoload de Composer
+        log_info "Probando vendor/autoload.php..."
+        set +e
+        php -r "require '/var/www/vendor/autoload.php'; echo 'Autoload OK
+';" 2>&1
+        AUTOLOAD_EXIT=$?
+        set -e
+        
+        if [ $AUTOLOAD_EXIT -ne 0 ]; then
+            log_error "Error en autoload - posible problema con vendor"
+        fi
+        
+        # Probar bootstrap de Laravel
+        log_info "Probando bootstrap/app.php..."
+        set +e
+        php -r "
+            error_reporting(E_ALL);
+            ini_set('display_errors', 1);
+            require '/var/www/vendor/autoload.php';
+            \$app = require_once '/var/www/bootstrap/app.php';
+            echo 'Bootstrap OK
+';
+        " 2>&1 | head -20
+        set -e
+        
+        # Ver log de Laravel si existe
+        if [ -f "/var/www/storage/logs/laravel.log" ]; then
+            log_info "Últimas líneas de laravel.log:"
+            tail -30 /var/www/storage/logs/laravel.log 2>/dev/null | head -30 || true
+        fi
+        
+        log_info "=== FIN DIAGNÓSTICO ==="
     else
         log_error "PHP artisan falló (exit code: $ARTISAN_EXIT)"
-        log_error "Output: $ARTISAN_OUTPUT"
+        if [ -n "$ARTISAN_STDOUT" ]; then
+            log_error "STDOUT: $ARTISAN_STDOUT"
+        fi
+        if [ -n "$ARTISAN_STDERR" ]; then
+            log_error "STDERR: $ARTISAN_STDERR"
+        fi
     fi
     
     # Verificar un archivo PHP encriptado
@@ -343,11 +395,15 @@ main() {
     if [ -n "$ENCRYPTED_FILE" ] && head -c 20 "$ENCRYPTED_FILE" 2>/dev/null | grep -q "<?php //00"; then
         log_info "Probando carga de: $ENCRYPTED_FILE"
         set +e
-        php -r "include '$ENCRYPTED_FILE';" 2>&1 | head -3 || true
+        php -r "require '/var/www/vendor/autoload.php'; include '$ENCRYPTED_FILE';" 2>&1 | head -10
         ENC_EXIT=$?
         set -e
-        if [ $ENC_EXIT -eq 139 ] || [ $ENC_EXIT -eq 134 ]; then
+        if [ $ENC_EXIT -eq 0 ]; then
+            log_success "Archivo encriptado cargado correctamente"
+        elif [ $ENC_EXIT -eq 139 ] || [ $ENC_EXIT -eq 134 ]; then
             log_error "ionCube NO puede cargar archivos encriptados - SIGSEGV"
+        else
+            log_warning "Error cargando archivo encriptado (code: $ENC_EXIT)"
         fi
     fi
     

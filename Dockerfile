@@ -2,7 +2,7 @@
 # DOCKERFILE ALL-IN-ONE PARA EASYPANEL - SISTEMA CPS
 # 
 # Este Dockerfile incluye TODO en un solo contenedor:
-# - PHP 8.1 + FPM
+# - PHP 8.3 + FPM (ACTUALIZADO - requerido por archivos ionCube)
 # - Nginx
 # - MariaDB (MySQL compatible)
 # - Redis
@@ -12,13 +12,15 @@
 #
 # IMPORTANTE: Usa Debian (glibc) en lugar de Alpine (musl) 
 # porque ionCube NO soporta musl/Alpine Linux
+#
+# NOTA: Los archivos helpers.php fueron encriptados para PHP 8.3
 # ==============================================================================
 
-FROM php:8.1-fpm-bullseye
+FROM php:8.3-fpm-bookworm
 
 LABEL maintainer="Matrix Agent" 
 LABEL description="CPS System All-in-One para EasyPanel"
-LABEL version="3.2.0-debian-vendor-fix"
+LABEL version="3.3.0-php83-ioncube-fix"
 
 # Evitar prompts interactivos durante la instalación
 ENV DEBIAN_FRONTEND=noninteractive
@@ -92,15 +94,15 @@ RUN docker-php-ext-configure gd \
 RUN pecl install redis && \
     docker-php-ext-enable redis
 
-# Instalar ionCube Loader (versión para Linux glibc x86-64)
+# Instalar ionCube Loader para PHP 8.3 (versión para Linux glibc x86-64)
 RUN PHP_EXT_DIR=$(php -r "echo ini_get('extension_dir');") && \
     echo "PHP Extension Directory: $PHP_EXT_DIR" && \
     cd /tmp && \
     curl -L -o ioncube.tar.gz "https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz" && \
     tar -xzf ioncube.tar.gz && \
-    cp ioncube/ioncube_loader_lin_8.1.so "$PHP_EXT_DIR/" && \
+    cp ioncube/ioncube_loader_lin_8.3.so "$PHP_EXT_DIR/" && \
     rm -rf ioncube* && \
-    echo "zend_extension=ioncube_loader_lin_8.1.so" > /usr/local/etc/php/conf.d/00-ioncube.ini
+    echo "zend_extension=ioncube_loader_lin_8.3.so" > /usr/local/etc/php/conf.d/00-ioncube.ini
 
 # Instalar Composer
 RUN curl -sS https://getcomposer.org/download/latest-2.x/composer.phar -o /usr/local/bin/composer && \

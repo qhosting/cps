@@ -268,8 +268,16 @@ main() {
     echo ""
     echo "=============================================="
     echo "   CPS SYSTEM - ALL-IN-ONE PARA EASYPANEL"
+    echo "   BUILD: v3.1.0 - 2025-12-05 - Commit 618bd31+"
     echo "=============================================="
     echo ""
+    
+    # Test inmediato de PHP para diagnóstico
+    log_info ">>> TEST INMEDIATO PHP <<<"
+    php -v 2>&1 | head -3
+    echo "---"
+    php -r "echo 'PHP funciona. ionCube: ' . (extension_loaded('ionCube Loader') ? 'SI' : 'NO') . PHP_EOL;" 2>&1
+    echo "---"
     
     # DIAGNÓSTICO CRÍTICO: Verificar sistema operativo
     log_info "Verificando sistema operativo..."
@@ -323,71 +331,72 @@ main() {
     # Guardar output en archivo temporal para mejor captura
     php artisan --version > /tmp/artisan_out.txt 2> /tmp/artisan_err.txt
     ARTISAN_EXIT=$?
-    ARTISAN_STDOUT=$(cat /tmp/artisan_out.txt 2>/dev/null || echo "")
-    ARTISAN_STDERR=$(cat /tmp/artisan_err.txt 2>/dev/null || echo "")
+    ARTISAN_STDOUT=$(cat /tmp/artisan_out.txt 2>/dev/null || echo "(vacio)")
+    ARTISAN_STDERR=$(cat /tmp/artisan_err.txt 2>/dev/null || echo "(vacio)")
     
-    set -e
+    log_info "Artisan exit code: $ARTISAN_EXIT"
+    log_info "Artisan STDOUT: $ARTISAN_STDOUT"
+    log_info "Artisan STDERR: $ARTISAN_STDERR"
     
     if [ $ARTISAN_EXIT -eq 0 ]; then
-        log_success "PHP artisan funciona: $ARTISAN_STDOUT"
-    elif [ $ARTISAN_EXIT -eq 139 ]; then
-        log_error "SIGSEGV (code 139) - Segmentation Fault"
-        log_error "Esto indica incompatibilidad binaria ionCube/musl"
-    elif [ $ARTISAN_EXIT -eq 134 ]; then
-        log_error "SIGABRT (code 134) - Aborted"
-    elif [ $ARTISAN_EXIT -eq 255 ]; then
-        log_error "Error fatal PHP (code 255)"
-        if [ -n "$ARTISAN_STDOUT" ]; then
-            log_error "STDOUT: $ARTISAN_STDOUT"
-        fi
-        if [ -n "$ARTISAN_STDERR" ]; then
-            log_error "STDERR: $ARTISAN_STDERR"
-        fi
+        log_success "PHP artisan funciona correctamente"
+    else
+        log_error "PHP artisan falló (exit code: $ARTISAN_EXIT)"
         
-        # Diagnóstico adicional para error 255
-        log_info "=== DIAGNÓSTICO DETALLADO ==="
+        # SIEMPRE ejecutar diagnóstico detallado si falla
+        log_info "========================================"
+        log_info "=== DIAGNÓSTICO DETALLADO (BUILD v3.1) ==="
+        log_info "========================================"
         
-        # Probar autoload de Composer
-        log_info "Probando vendor/autoload.php..."
-        set +e
-        php -r "require '/var/www/vendor/autoload.php'; echo 'Autoload OK
-';" 2>&1
-        AUTOLOAD_EXIT=$?
-        set -e
+        # Test 1: Probar autoload de Composer
+        log_info "[TEST 1] Probando vendor/autoload.php..."
+        php -r "require '/var/www/vendor/autoload.php'; echo 'Autoload: OK' . PHP_EOL;" 2>&1 || echo "Autoload: FALLO"
         
-        if [ $AUTOLOAD_EXIT -ne 0 ]; then
-            log_error "Error en autoload - posible problema con vendor"
-        fi
+        # Test 2: Verificar archivo bootstrap
+        log_info "[TEST 2] Verificando bootstrap/app.php existe..."
+        ls -la /var/www/bootstrap/app.php 2>&1 || echo "bootstrap/app.php NO EXISTE"
         
-        # Probar bootstrap de Laravel
-        log_info "Probando bootstrap/app.php..."
-        set +e
+        # Test 3: Probar cargar bootstrap
+        log_info "[TEST 3] Cargando bootstrap/app.php..."
         php -r "
             error_reporting(E_ALL);
             ini_set('display_errors', 1);
+            ini_set('display_startup_errors', 1);
+            echo 'Iniciando carga...' . PHP_EOL;
             require '/var/www/vendor/autoload.php';
+            echo 'Autoload cargado.' . PHP_EOL;
             \$app = require_once '/var/www/bootstrap/app.php';
-            echo 'Bootstrap OK
-';
-        " 2>&1 | head -20
-        set -e
+            echo 'Bootstrap: OK' . PHP_EOL;
+        " 2>&1 || echo "Bootstrap: FALLO"
         
-        # Ver log de Laravel si existe
+        # Test 4: Ver log de Laravel
+        log_info "[TEST 4] Verificando laravel.log..."
         if [ -f "/var/www/storage/logs/laravel.log" ]; then
-            log_info "Últimas líneas de laravel.log:"
-            tail -30 /var/www/storage/logs/laravel.log 2>/dev/null | head -30 || true
+            log_info "Contenido de laravel.log:"
+            tail -50 /var/www/storage/logs/laravel.log 2>/dev/null || echo "No se puede leer"
+        else
+            log_warning "laravel.log no existe todavía"
         fi
         
+        # Test 5: Verificar permisos de storage
+        log_info "[TEST 5] Verificando permisos de storage..."
+        ls -la /var/www/storage/ 2>&1 | head -10
+        
+        # Test 6: Verificar .env
+        log_info "[TEST 6] Verificando .env existe..."
+        if [ -f "/var/www/.env" ]; then
+            log_success ".env existe"
+            grep -E '^(APP_|DB_|REDIS_)' /var/www/.env 2>/dev/null | head -10
+        else
+            log_error ".env NO EXISTE"
+        fi
+        
+        log_info "========================================"
         log_info "=== FIN DIAGNÓSTICO ==="
-    else
-        log_error "PHP artisan falló (exit code: $ARTISAN_EXIT)"
-        if [ -n "$ARTISAN_STDOUT" ]; then
-            log_error "STDOUT: $ARTISAN_STDOUT"
-        fi
-        if [ -n "$ARTISAN_STDERR" ]; then
-            log_error "STDERR: $ARTISAN_STDERR"
-        fi
+        log_info "========================================"
     fi
+    
+    set -e
     
     # Verificar un archivo PHP encriptado
     log_info "Probando archivo PHP encriptado..."

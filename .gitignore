@@ -605,7 +605,9 @@
 # DEVOPS & CONTAINERS
 # ==============================================================================
 # Docker
-# Dockerfile*, .dockerignore, docker-compose*.yml should be tracked in version control
+**/Dockerfile*
+**/.dockerignore
+**/docker-compose*.yml
 **/.docker/
 
 # Kubernetes

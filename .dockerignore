@@ -1,0 +1,74 @@
+# Archivos y directorios a ignorar en Docker
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+.env
+.env.local
+.env.production
+node_modules
+npm-debug.log
+yarn-error.log
+composer.phar
+/vendor
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/app/public/*
+/storage/framework/testing/*
+/storage/app/*
+/storage/*.key
+/storage/logs/*.log
+/bootstrap/cache/*.php
+/bootstrap/cache/*.json
+/bootstrap/cache/config.php
+/bootstrap/cache/packages.php
+/bootstrap/cache/routes.php
+/bootstrap/cache/services.php
+
+# Archivos temporales
+*.tmp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Archivos de logs
+*.log
+logs/
+
+# Archivos de configuración local
+config/local/
+config/testing/
+
+# Archivos de base de datos
+database/*.sqlite
+database/*.db
+
+# Documentación
+docs/
+*.md
+
+# Archivos de testing
+tests/
+phpunit.xml
+phpunit.xml.dist
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de sistema
+*.zip
+*.tar.gz
+*.rar
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

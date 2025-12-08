@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Aplicación PHP con Nginx
+  app:
+    build: .
+    container_name: cps_app
+    ports:
+      - "80:80"
+    volumes:
+      - ./system:/var/www
+      - ./storage:/var/www/storage
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=cps_system
+      - DB_USERNAME=cps_user
+      - DB_PASSWORD=cps_secure_password_2025
+    restart: unless-stopped
+    networks:
+      - cps_network
+
+  # Base de datos MySQL
+  mysql:
+    image: mysql:latest
+    container_name: cps_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql_root_password_2025
+      MYSQL_DATABASE: cps_system
+      MYSQL_USER: cps_user
+      MYSQL_PASSWORD: cps_secure_password_2025
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/01-database.sql
+    restart: unless-stopped
+    networks:
+      - cps_network
+
+  # Redis para cache (opcional pero recomendado)
+  redis:
+    image: redis:alpine
+    container_name: cps_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - cps_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  cps_network:
+    driver: bridge

@@ -1,15 +1,26 @@
-# Sistema CPS - Despliegue en Easypanel
+# Sistema CPS - Despliegue Docker
 
-Este proyecto contiene un sistema Laravel completo con PHP 8.3, ionCube 14 y MySQL, listo para desplegar en Easypanel.
+Este proyecto contiene un sistema Laravel completo con PHP 8.3, ionCube 14 y MySQL, optimizado para Docker y compatible con Easypanel.
 
 ## 🚀 Características
 
-- **PHP 8.3** con ionCube Loader
-- **Laravel 9.0** framework
-- **MySQL** base de datos
-- **Nginx** servidor web
-- **Redis** cache y colas
-- **Configuración todo-en-uno** en Docker
+- **PHP 8.3** con ionCube Loader 14 ✅ (Corregido)
+- **Laravel 9** framework
+- **MySQL 8.0** base de datos
+- **Redis** para caché y sesiones  
+- **Nginx** como servidor web separado
+- **Docker Compose** para orquestación completa
+- **Servicios independientes** para mejor escalabilidad
+
+## 🔧 Estructura de Servicios
+
+El docker-compose.yml incluye los siguientes servicios:
+
+- **app**: Aplicación PHP-FPM con ionCube
+- **web**: Servidor Nginx (separado)
+- **mysql**: Base de datos MySQL 8.0
+- **redis**: Sistema de caché Redis
+- **phpmyadmin**: Panel de administración (puerto 8080)
 
 ## 📋 Requisitos
 
@@ -17,6 +28,7 @@ Este proyecto contiene un sistema Laravel completo con PHP 8.3, ionCube 14 y MyS
 - Docker y Docker Compose disponibles
 - Al menos 2GB RAM disponible
 - 10GB espacio en disco
+- Puertos 80, 443, 8080 disponibles
 
 ## 🛠️ Instalación en Easypanel
 
@@ -52,26 +64,55 @@ Este proyecto contiene un sistema Laravel completo con PHP 8.3, ionCube 14 y MyS
    - API tokens
    - Configuración de Stripe/PayPal
 
-### Paso 4: Construir y ejecutar
+### Paso 4: Configurar variables de entorno
 
-1. **Construye la imagen Docker:**
+1. **Copia el archivo de ejemplo:**
    ```bash
-   cd /var/www/cps-system/
-   docker-compose build
+   cp .env.example .env
    ```
 
-2. **Ejecuta los contenedores:**
+2. **Edita el archivo `.env` y configura:**
+   - `APP_URL`: Tu dominio
+   - `DB_PASSWORD`: Contraseña segura para MySQL
+   - `DB_DATABASE`: Nombre de la base de datos
+   - `DB_USERNAME`: Usuario de la base de datos
+   - API tokens
+   - Configuración de Stripe/PayPal
+
+### Paso 5: Construir y ejecutar
+
+1. **Construye y ejecuta todos los servicios:**
    ```bash
-   docker-compose up -d
+   docker-compose up -d --build
+   ```
+
+2. **Verifica que todos los servicios estén funcionando:**
+   ```bash
+   docker-compose ps
+   ```
+
+3. **Revisa los logs si hay problemas:**
+   ```bash
+   docker-compose logs app
+   docker-compose logs web
+   docker-compose logs mysql
    ```
 
 3. **Ejecuta la inicialización:**
    ```bash
-   chmod +x init.sh
-   ./init.sh
+   docker-compose exec app bash init.sh
    ```
 
-### Paso 5: Configurar persistencia
+### Paso 6: Acceso a servicios
+
+Una vez desplegado, puedes acceder a:
+
+- **Aplicación principal**: http://tu-servidor (puerto 80)
+- **PHPMyAdmin**: http://tu-servidor:8080 (para gestión de base de datos)
+- **MySQL**: puerto 3306 (interno)
+- **Redis**: puerto 6379 (interno)
+
+### Paso 7: Configurar persistencia
 
 Para hacer persistentes los datos después del despliegue inicial:
 
@@ -79,6 +120,7 @@ Para hacer persistentes los datos después del despliegue inicial:
    ```bash
    docker volume create cps_mysql_data
    docker volume create cps_storage_data
+   docker volume create cps_redis_data
    ```
 
 2. **Modificar docker-compose.yml para usar volúmenes persistentes:**

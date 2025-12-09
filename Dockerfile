@@ -1,13 +1,14 @@
 # Dockerfile para Sistema Laravel con PHP 8.3, ionCube 15.0.0 y MySQL
 FROM php:8.3-fpm
 
-# Declarar argumentos de construcción para variables de entorno
+# Argumentos de construcción para variables de entorno
 ARG APP_NAME="CPS License Management"
 ARG APP_ENV=production
-ARG APP_KEY=
+ARG APP_KEY=""
 ARG APP_DEBUG=false
-ARG APP_URL=https://cps.qhosting.net
+ARG APP_URL="https://cps.qhosting.net"
 
+# Base de datos
 ARG DB_CONNECTION=mysql
 ARG DB_HOST=127.0.0.1
 ARG DB_PORT=3306
@@ -15,17 +16,22 @@ ARG DB_DATABASE=cps_database
 ARG DB_USERNAME=username
 ARG DB_PASSWORD=password
 
+# Redis
 ARG REDIS_HOST=127.0.0.1
 ARG REDIS_PASSWORD=null
 ARG REDIS_PORT=6379
 
+# Configuración de correo
 ARG MAIL_MAILER=smtp
 ARG MAIL_HOST=mailhog
 ARG MAIL_PORT=1025
 ARG MAIL_USERNAME=null
 ARG MAIL_PASSWORD=null
 ARG MAIL_ENCRYPTION=null
+ARG MAIL_FROM_ADDRESS="hello@example.com"
+ARG MAIL_FROM_NAME="${APP_NAME}"
 
+# Claves de pago
 ARG STRIPE_KEY=your_stripe_public_key
 ARG STRIPE_SECRET=your_stripe_secret_key
 ARG PAYPAL_CLIENT_ID=your_paypal_client_id
@@ -81,70 +87,6 @@ WORKDIR /var/www
 # Copiar archivos de la aplicación
 COPY system/ /var/www/
 
-# Crear archivo .env con las variables de build-arg
-RUN if [ ! -f /var/www/.env ]; then \
-        cat > /var/www/.env << 'EOF'
-APP_NAME="$APP_NAME"
-APP_ENV=$APP_ENV
-APP_KEY=$APP_KEY
-APP_DEBUG=$APP_DEBUG
-APP_URL=$APP_URL
-
-LOG_CHANNEL=stack
-LOG_DEPRECATIONS_CHANNEL=null
-LOG_LEVEL=debug
-
-DB_CONNECTION=$DB_CONNECTION
-DB_HOST=$DB_HOST
-DB_PORT=$DB_PORT
-DB_DATABASE=$DB_DATABASE
-DB_USERNAME=$DB_USERNAME
-DB_PASSWORD=$DB_PASSWORD
-
-BROADCAST_DRIVER=log
-CACHE_DRIVER=file
-FILESYSTEM_DISK=local
-QUEUE_CONNECTION=sync
-SESSION_DRIVER=file
-SESSION_LIFETIME=120
-
-MEMCACHED_HOST=127.0.0.1
-
-REDIS_HOST=$REDIS_HOST
-REDIS_PASSWORD=$REDIS_PASSWORD
-REDIS_PORT=$REDIS_PORT
-
-MAIL_MAILER=$MAIL_MAILER
-MAIL_HOST=$MAIL_HOST
-MAIL_PORT=$MAIL_PORT
-MAIL_USERNAME=$MAIL_USERNAME
-MAIL_PASSWORD=$MAIL_PASSWORD
-MAIL_ENCRYPTION=$MAIL_ENCRYPTION
-MAIL_FROM_ADDRESS=null
-MAIL_FROM_NAME="${APP_NAME}"
-
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_DEFAULT_REGION=us-east-1
-AWS_BUCKET=
-AWS_USE_PATH_STYLE_ENDPOINT=false
-
-PUSHER_APP_ID=
-PUSHER_APP_KEY=
-PUSHER_APP_SECRET=
-PUSHER_APP_CLUSTER=mt1
-
-VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
-VITE_PUSHER_CLUSTER="${PUSHER_APP_CLUSTER}"
-
-STRIPE_KEY=$STRIPE_KEY
-STRIPE_SECRET=$STRIPE_SECRET
-PAYPAL_CLIENT_ID=$PAYPAL_CLIENT_ID
-PAYPAL_CLIENT_SECRET=$PAYPAL_CLIENT_SECRET
-PAYPAL_MODE=$PAYPAL_MODE
-EOF
-    fi
-
 # Crear directorios necesarios con propiedad correcta ANTES de composer install
 RUN mkdir -p /var/www/bootstrap/cache \
     && mkdir -p /var/www/storage/logs \
@@ -163,6 +105,70 @@ RUN mkdir -p /var/www/bootstrap/cache \
 RUN chown -R www-data:www-data /var/www \
     && sudo -u www-data composer install --optimize-autoloader --no-dev --no-interaction || \
     composer install --optimize-autoloader --no-dev --no-interaction
+
+# Crear .env directamente si no existe
+RUN if [ ! -f /var/www/.env ]; then \
+        cat > /var/www/.env << 'EOF'
+APP_NAME="${APP_NAME}"
+APP_ENV=${APP_ENV}
+APP_KEY=${APP_KEY}
+APP_DEBUG=${APP_DEBUG}
+APP_URL=${APP_URL}
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=${DB_CONNECTION}
+DB_HOST=${DB_HOST}
+DB_PORT=${DB_PORT}
+DB_DATABASE=${DB_DATABASE}
+DB_USERNAME=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DRIVER=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=${REDIS_HOST}
+REDIS_PASSWORD=${REDIS_PASSWORD}
+REDIS_PORT=${REDIS_PORT}
+
+MAIL_MAILER=${MAIL_MAILER}
+MAIL_HOST=${MAIL_HOST}
+MAIL_PORT=${MAIL_PORT}
+MAIL_USERNAME=${MAIL_USERNAME}
+MAIL_PASSWORD=${MAIL_PASSWORD}
+MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
+MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=mt1
+
+MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+STRIPE_KEY=${STRIPE_KEY}
+STRIPE_SECRET=${STRIPE_SECRET}
+PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
+PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET}
+PAYPAL_MODE=${PAYPAL_MODE}
+EOF
+    fi
 
 # Configurar permisos finales para producción
 RUN chown -R www-data:www-data /var/www \

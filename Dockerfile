@@ -51,7 +51,7 @@ RUN mkdir -p /var/www/bootstrap/cache \
     && mkdir -p /var/www/storage/logs \
     && mkdir -p /var/www/storage/framework \
     && mkdir -p /var/www/storage/app \
-    && chmod -R 775 /var/www/bootstrap/cache \
+    && chmod -R 777 /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage/logs \
     && chmod -R 775 /var/www/storage/framework \
     && chmod -R 775 /var/www/storage/app

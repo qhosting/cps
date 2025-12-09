@@ -46,10 +46,17 @@ WORKDIR /var/www
 # Copiar archivos de la aplicación
 COPY system/ /var/www/
 
+# Crear directorios necesarios ANTES de composer install
+RUN mkdir -p /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage/logs \
+    && chmod -R 775 /var/www/storage/framework \
+    && chmod -R 775 /var/www/storage/app
+
 # Instalar dependencias de PHP (solo después de verificar ionCube)
 RUN composer install --optimize-autoloader --no-dev --no-interaction
 
-# Configurar permisos
+# Configurar permisos finales
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage \
     && chmod -R 777 /var/www/storage/logs \
@@ -58,5 +65,4 @@ RUN chown -R www-data:www-data /var/www \
     && chmod -R 777 /var/www/bootstrap/cache
 
 # Comando de inicio por defecto
-CMD ["php-fpm"]
 CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]

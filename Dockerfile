@@ -83,32 +83,67 @@ COPY system/ /var/www/
 
 # Crear archivo .env con las variables de build-arg
 RUN if [ ! -f /var/www/.env ]; then \
-        cp /var/www/.env.example /var/www/.env; \
-    fi && \
-    sed -i "s/APP_NAME=.*/APP_NAME=\"$APP_NAME\"/" /var/www/.env && \
-    sed -i "s/APP_ENV=.*/APP_ENV=$APP_ENV/" /var/www/.env && \
-    sed -i "s/APP_DEBUG=.*/APP_DEBUG=$APP_DEBUG/" /var/www/.env && \
-    sed -i "s|APP_URL=.*|APP_URL=$APP_URL|" /var/www/.env && \
-    sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=$DB_CONNECTION/" /var/www/.env && \
-    sed -i "s/DB_HOST=.*/DB_HOST=$DB_HOST/" /var/www/.env && \
-    sed -i "s/DB_PORT=.*/DB_PORT=$DB_PORT/" /var/www/.env && \
-    sed -i "s/DB_DATABASE=.*/DB_DATABASE=$DB_DATABASE/" /var/www/.env && \
-    sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/" /var/www/.env && \
-    sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" /var/www/.env && \
-    sed -i "s/REDIS_HOST=.*/REDIS_HOST=$REDIS_HOST/" /var/www/.env && \
-    sed -i "s/REDIS_PASSWORD=.*/REDIS_PASSWORD=$REDIS_PASSWORD/" /var/www/.env && \
-    sed -i "s/REDIS_PORT=.*/REDIS_PORT=$REDIS_PORT/" /var/www/.env && \
-    sed -i "s/MAIL_MAILER=.*/MAIL_MAILER=$MAIL_MAILER/" /var/www/.env && \
-    sed -i "s/MAIL_HOST=.*/MAIL_HOST=$MAIL_HOST/" /var/www/.env && \
-    sed -i "s/MAIL_PORT=.*/MAIL_PORT=$MAIL_PORT/" /var/www/.env && \
-    sed -i "s/MAIL_USERNAME=.*/MAIL_USERNAME=$MAIL_USERNAME/" /var/www/.env && \
-    sed -i "s/MAIL_PASSWORD=.*/MAIL_PASSWORD=$MAIL_PASSWORD/" /var/www/.env && \
-    sed -i "s/MAIL_ENCRYPTION=.*/MAIL_ENCRYPTION=$MAIL_ENCRYPTION/" /var/www/.env && \
-    sed -i "s/STRIPE_KEY=.*/STRIPE_KEY=$STRIPE_KEY/" /var/www/.env && \
-    sed -i "s/STRIPE_SECRET=.*/STRIPE_SECRET=$STRIPE_SECRET/" /var/www/.env && \
-    sed -i "s/PAYPAL_CLIENT_ID=.*/PAYPAL_CLIENT_ID=$PAYPAL_CLIENT_ID/" /var/www/.env && \
-    sed -i "s/PAYPAL_CLIENT_SECRET=.*/PAYPAL_CLIENT_SECRET=$PAYPAL_CLIENT_SECRET/" /var/www/.env && \
-    sed -i "s/PAYPAL_MODE=.*/PAYPAL_MODE=$PAYPAL_MODE/" /var/www/.env
+        cat > /var/www/.env << 'EOF'
+APP_NAME="$APP_NAME"
+APP_ENV=$APP_ENV
+APP_KEY=$APP_KEY
+APP_DEBUG=$APP_DEBUG
+APP_URL=$APP_URL
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=$DB_CONNECTION
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_DATABASE=$DB_DATABASE
+DB_USERNAME=$DB_USERNAME
+DB_PASSWORD=$DB_PASSWORD
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=$REDIS_HOST
+REDIS_PASSWORD=$REDIS_PASSWORD
+REDIS_PORT=$REDIS_PORT
+
+MAIL_MAILER=$MAIL_MAILER
+MAIL_HOST=$MAIL_HOST
+MAIL_PORT=$MAIL_PORT
+MAIL_USERNAME=$MAIL_USERNAME
+MAIL_PASSWORD=$MAIL_PASSWORD
+MAIL_ENCRYPTION=$MAIL_ENCRYPTION
+MAIL_FROM_ADDRESS=null
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=mt1
+
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+STRIPE_KEY=$STRIPE_KEY
+STRIPE_SECRET=$STRIPE_SECRET
+PAYPAL_CLIENT_ID=$PAYPAL_CLIENT_ID
+PAYPAL_CLIENT_SECRET=$PAYPAL_CLIENT_SECRET
+PAYPAL_MODE=$PAYPAL_MODE
+EOF
+    fi
 
 # Crear directorios necesarios con propiedad correcta ANTES de composer install
 RUN mkdir -p /var/www/bootstrap/cache \

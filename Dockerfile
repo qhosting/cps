@@ -1,9 +1,9 @@
 # Dockerfile para Sistema Laravel con PHP 8.3, ionCube 15.0.0 y MySQL
 FROM php:8.3-fpm
 
-# Crear usuario www-data ANTES de cualquier operación
-RUN groupadd -g 33 www-data && \
-    useradd -u 33 -g www-data www-data
+# Verificar y crear usuario www-data solo si no existe
+RUN (getent group www-data >/dev/null 2>&1) || groupadd -g 33 www-data && \
+    (id -u www-data >/dev/null 2>&1) || useradd -u 33 -g www-data www-data
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \

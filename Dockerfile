@@ -1,6 +1,37 @@
 # Dockerfile para Sistema Laravel con PHP 8.3, ionCube 15.0.0 y MySQL
 FROM php:8.3-fpm
 
+# Declarar argumentos de construcción para variables de entorno
+ARG APP_NAME="CPS License Management"
+ARG APP_ENV=production
+ARG APP_KEY=
+ARG APP_DEBUG=false
+ARG APP_URL=https://cps.qhosting.net
+
+ARG DB_CONNECTION=mysql
+ARG DB_HOST=127.0.0.1
+ARG DB_PORT=3306
+ARG DB_DATABASE=cps_database
+ARG DB_USERNAME=username
+ARG DB_PASSWORD=password
+
+ARG REDIS_HOST=127.0.0.1
+ARG REDIS_PASSWORD=null
+ARG REDIS_PORT=6379
+
+ARG MAIL_MAILER=smtp
+ARG MAIL_HOST=mailhog
+ARG MAIL_PORT=1025
+ARG MAIL_USERNAME=null
+ARG MAIL_PASSWORD=null
+ARG MAIL_ENCRYPTION=null
+
+ARG STRIPE_KEY=your_stripe_public_key
+ARG STRIPE_SECRET=your_stripe_secret_key
+ARG PAYPAL_CLIENT_ID=your_paypal_client_id
+ARG PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+ARG PAYPAL_MODE=sandbox
+
 # Verificar y crear usuario www-data solo si no existe
 RUN (getent group www-data >/dev/null 2>&1) || groupadd -g 33 www-data && \
     (id -u www-data >/dev/null 2>&1) || useradd -u 33 -g www-data www-data
@@ -49,6 +80,35 @@ WORKDIR /var/www
 
 # Copiar archivos de la aplicación
 COPY system/ /var/www/
+
+# Crear archivo .env con las variables de build-arg
+RUN if [ ! -f /var/www/.env ]; then \
+        cp /var/www/.env.example /var/www/.env; \
+    fi && \
+    sed -i "s/APP_NAME=.*/APP_NAME=\"$APP_NAME\"/" /var/www/.env && \
+    sed -i "s/APP_ENV=.*/APP_ENV=$APP_ENV/" /var/www/.env && \
+    sed -i "s/APP_DEBUG=.*/APP_DEBUG=$APP_DEBUG/" /var/www/.env && \
+    sed -i "s|APP_URL=.*|APP_URL=$APP_URL|" /var/www/.env && \
+    sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=$DB_CONNECTION/" /var/www/.env && \
+    sed -i "s/DB_HOST=.*/DB_HOST=$DB_HOST/" /var/www/.env && \
+    sed -i "s/DB_PORT=.*/DB_PORT=$DB_PORT/" /var/www/.env && \
+    sed -i "s/DB_DATABASE=.*/DB_DATABASE=$DB_DATABASE/" /var/www/.env && \
+    sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/" /var/www/.env && \
+    sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" /var/www/.env && \
+    sed -i "s/REDIS_HOST=.*/REDIS_HOST=$REDIS_HOST/" /var/www/.env && \
+    sed -i "s/REDIS_PASSWORD=.*/REDIS_PASSWORD=$REDIS_PASSWORD/" /var/www/.env && \
+    sed -i "s/REDIS_PORT=.*/REDIS_PORT=$REDIS_PORT/" /var/www/.env && \
+    sed -i "s/MAIL_MAILER=.*/MAIL_MAILER=$MAIL_MAILER/" /var/www/.env && \
+    sed -i "s/MAIL_HOST=.*/MAIL_HOST=$MAIL_HOST/" /var/www/.env && \
+    sed -i "s/MAIL_PORT=.*/MAIL_PORT=$MAIL_PORT/" /var/www/.env && \
+    sed -i "s/MAIL_USERNAME=.*/MAIL_USERNAME=$MAIL_USERNAME/" /var/www/.env && \
+    sed -i "s/MAIL_PASSWORD=.*/MAIL_PASSWORD=$MAIL_PASSWORD/" /var/www/.env && \
+    sed -i "s/MAIL_ENCRYPTION=.*/MAIL_ENCRYPTION=$MAIL_ENCRYPTION/" /var/www/.env && \
+    sed -i "s/STRIPE_KEY=.*/STRIPE_KEY=$STRIPE_KEY/" /var/www/.env && \
+    sed -i "s/STRIPE_SECRET=.*/STRIPE_SECRET=$STRIPE_SECRET/" /var/www/.env && \
+    sed -i "s/PAYPAL_CLIENT_ID=.*/PAYPAL_CLIENT_ID=$PAYPAL_CLIENT_ID/" /var/www/.env && \
+    sed -i "s/PAYPAL_CLIENT_SECRET=.*/PAYPAL_CLIENT_SECRET=$PAYPAL_CLIENT_SECRET/" /var/www/.env && \
+    sed -i "s/PAYPAL_MODE=.*/PAYPAL_MODE=$PAYPAL_MODE/" /var/www/.env
 
 # Crear directorios necesarios con propiedad correcta ANTES de composer install
 RUN mkdir -p /var/www/bootstrap/cache \

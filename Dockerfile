@@ -106,9 +106,8 @@ RUN chown -R www-data:www-data /var/www \
     && sudo -u www-data composer install --optimize-autoloader --no-dev --no-interaction || \
     composer install --optimize-autoloader --no-dev --no-interaction
 
-# Crear .env directamente si no existe
-RUN if [ ! -f /var/www/.env ]; then \
-        cat > /var/www/.env << 'EOF'
+# Crear archivo .env directamente usando heredoc
+RUN cat > /var/www/.env << EOF
 APP_NAME="${APP_NAME}"
 APP_ENV=${APP_ENV}
 APP_KEY=${APP_KEY}
@@ -168,7 +167,6 @@ PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
 PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET}
 PAYPAL_MODE=${PAYPAL_MODE}
 EOF
-    fi
 
 # Configurar permisos finales para producción
 RUN chown -R www-data:www-data /var/www \

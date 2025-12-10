@@ -1,4 +1,5 @@
 # Dockerfile para Sistema Laravel con PHP 8.3, ionCube 15.0.0 y MySQL
+# CON VALIDACIÓN AUTOMÁTICA OPTIMIZADA PARA EASYPANEL
 FROM php:8.3-fpm
 
 # Argumentos de construcción para variables de entorno
@@ -59,6 +60,8 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libpng-dev \
     libfreetype6-dev \
+    netcat-openbsd \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensiones de PHP
@@ -175,6 +178,31 @@ RUN chown -R www-data:www-data /var/www \
     && chmod -R 777 /var/www/storage/logs \
     && chmod -R 777 /var/www/storage/framework \
     && chmod -R 777 /var/www/storage/app
+
+# ===============================
+# VALIDACIÓN AUTOMÁTICA PARA EASYPANEL
+# ===============================
+
+# Copiar scripts de validación
+RUN mkdir -p /var/www/validation-scripts
+COPY validation-scripts/ /var/www/validation-scripts/
+
+# Hacer ejecutables los scripts de validación
+RUN chmod +x /var/www/validation-scripts/*.sh
+
+# Ejecutar validación automática optimizada para build
+RUN echo "" && \
+    echo "========================================" && \
+    echo "=== EASYPANEL POST-DEPLOY VALIDATION ===" && \
+    echo "===    Validación de Build Docker      ===" && \
+    echo "========================================" && \
+    cd /var/www/validation-scripts && \
+    bash docker_build_validation.sh && \
+    echo "" && \
+    echo "=== VALIDACIÓN DE BUILD COMPLETADA ===" && \
+    echo "✅ Contenedor listo para despliegue" && \
+    echo "🔄 La validación completa se ejecutará al iniciar" && \
+    cd /var/www
 
 # Comando de inicio por defecto
 CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]

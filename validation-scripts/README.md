@@ -30,6 +30,85 @@ Los scripts de validación están diseñados para:
 - ✅ Configuración Laravel
 - ✅ Permisos de archivos
 
+## 🖥️ Integración con Consola Easypanel
+
+### ✨ Ejecución Automática en Consola
+
+Los scripts ahora **se ejecutan automáticamente** y muestran resultados **directamente en la consola de Easypanel** después de:
+
+- ✅ **Deploy exitoso** (al final del proceso)
+- ✅ **Reinicio de servicios** (si está configurado)
+- ✅ **Deployment manual** (via script maestro)
+
+### 🎛️ Scripts para Consola
+
+#### 🚀 Script Maestro (Recomendado)
+```bash
+bash auto_diagnostic.sh {deploy|restart|manual|status}
+```
+
+**Contextos disponibles:**
+- `deploy` - Ejecuta validación completa post-deploy
+- `restart` - Validación rápida post-reinicio  
+- `manual` - Ejecuta todos los diagnósticos
+- `status` - Verificación rápida de estado
+
+#### 📊 Validación Completa para Consola
+```bash
+bash easypanel_post_deploy_check.sh
+```
+- Diseñado específicamente para salida en consola
+- Muestra estado en tiempo real con emojis
+- Genera logs detallados y resumen ejecutivo
+- **Tiempo de ejecución:** ~1-2 minutos
+
+#### ⚡ Validación Rápida para Consola
+```bash
+bash restart_quick_check.sh
+```
+- Verificación básica para consola
+- Solo componentes críticos
+- **Tiempo de ejecución:** ~10-15 segundos
+
+### 📱 Salida en Consola Easypanel
+
+Ejemplo de salida esperada en la consola:
+
+```
+================================================================================
+ CPS POST-DEPLOY DIAGNOSTIC - Easypanel Console
+================================================================================
+[2025-12-10 09:52:48] Script iniciado automáticamente después del deploy/reinicio
+[2025-12-10 09:52:48] Timestamp: Tue Dec 10 09:52:48 UTC 2025
+
+================================================================================
+ 1. VERIFICACIÓN RÁPIDA DEL SISTEMA
+================================================================================
+[2025-12-10 09:52:48] ✅ Puerto 3000: ESCUCHANDO (CPS aplicación)
+[2025-12-10 09:52:48] ✅ PHP-FPM: CORRIENDO
+[2025-12-10 09:52:48]    Procesos PHP-FPM activos: 3
+
+================================================================================
+ 2. PRUEBA DE CONECTIVIDAD INTERNA
+================================================================================
+[2025-12-10 09:52:49] ✅ Conectividad localhost:3000: HTTP 200 (OK)
+
+================================================================================
+ 8. RESUMEN EJECUTIVO
+================================================================================
+[2025-12-10 09:52:52] Problemas detectados:
+[2025-12-10 09:52:52]   Errores críticos: 0
+[2025-12-10 09:52:52]   Advertencias: 0
+[2025-12-10 09:52:52] 🎉 ESTADO GENERAL: EXCELENTE - Sistema funcionando correctamente
+
+=== CPS DIAGNOSTIC SUMMARY ===
+Estado: EXCELLENT
+Errores: 0 | Advertencias: 0
+Log completo: /workspace/validation-scripts/logs/easypanel_check_20251210_095248.log
+Verificar acceso: https://cps.qhosting.net
+============================
+```
+
 ## 📋 Scripts Principales
 
 ### 🔍 Validación Completa

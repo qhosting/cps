@@ -477,31 +477,15 @@ trap 'error "Script interrumpido"' INT TERM
 main "$@"
 # Add post-deploy validation
 echo ""
-echo "=== RUNNING POST-DEPLOY VALIDATION ==="
+echo "=== RUNNING POST-DEPLOY VALIDATION FOR EASYPANEL CONSOLE ==="
 
 VALIDATION_DIR="/workspace/validation-scripts"
 if [[ -d "$VALIDATION_DIR" ]]; then
     cd "$VALIDATION_DIR"
     
-    # Run quick validation
-    echo "Running quick validation..."
-    if bash quick_validate_easypanel.sh; then
-        echo "✅ Quick validation: PASSED"
-    else
-        echo "⚠️ Quick validation: FAILED"
-    fi
-    
-    # Run detailed validation
-    echo "Running detailed validation..."
-    if php validate_deployment_easypanel.php; then
-        echo "✅ Detailed validation: PASSED"
-    else
-        echo "❌ Detailed validation: FAILED"
-    fi
-    
-    # Run post-deploy validation for logging
-    echo "Running post-deploy validation for logging..."
-    bash post_deploy_validation.sh
+    # Run master diagnostic script with deploy context
+    echo "Starting CPS auto-diagnostic for deployment..."
+    bash auto_diagnostic.sh deploy
     
     cd /workspace
 else
@@ -510,4 +494,5 @@ fi
 
 echo ""
 echo "=== VALIDATION COMPLETED ==="
-echo "Check results in validation-scripts/logs/"
+echo "Check detailed results in validation-scripts/logs/"
+echo "Quick status: validation-scripts/logs/latest_status.txt"

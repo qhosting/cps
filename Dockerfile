@@ -43,7 +43,7 @@ ARG PAYPAL_MODE=sandbox
 RUN (getent group www-data >/dev/null 2>&1) || groupadd -g 33 www-data && \
     (id -u www-data >/dev/null 2>&1) || useradd -u 33 -g www-data www-data
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema (incluyendo nginx y gettext-base para envsubst)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -62,6 +62,8 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     netcat-openbsd \
     procps \
+    nginx \
+    gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensiones de PHP
@@ -203,6 +205,31 @@ RUN echo "" && \
     echo "✅ Contenedor listo para despliegue" && \
     echo "🔄 La validación completa se ejecutará al iniciar" && \
     cd /var/www
+
+# ===============================
+# CONFIGURACIÓN NGINX PARA EASYPANEL
+# ===============================
+
+# Copiar configuración de nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Crear directorio para logs de nginx
+RUN mkdir -p /var/log/nginx && \
+    chown -R www-data:www-data /var/log/nginx
+
+# Copiar entrypoint script
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Exponer puerto 3000 (configurable vía variable PORT)
+EXPOSE 3000
+
+# Healthcheck en puerto 3000
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-3000}/api/health || exit 1
+
+# Usar entrypoint script para configurar puerto dinámicamente
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Comando de inicio por defecto
 CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]

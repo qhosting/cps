@@ -1,0 +1,3 @@
+# Keep monitoring directory structure but ignore log files
+# Individual monitoring log files will be gitignored by the main .gitignore
+# This ensures the directory structure is preserved

@@ -17,18 +17,19 @@ services:
       # Aplicación
       - APP_ENV=production
       - APP_DEBUG=false
-      - APP_URL=https://tu-dominio.com
+      - APP_URL=https://cps.qhosting.net
       - PORT=3000
       
-      # Base de datos MySQL externa
-      - DB_HOST=mysql-externo
+      # Base de datos MySQL 
+      - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_DATABASE=cps_database
+      - DB_DATABASE=cps_system
       - DB_USERNAME=cps_user
-      - DB_PASSWORD=cps_secure_2025
+      - DB_PASSWORD=cps_secure_password_2025
       
-      # Redis externo
-      - REDIS_HOST=redis-externo
+      # Redis
+      - REDIS_HOST=qhosting_cps-redis
+      - REDIS_PASSWORD=cps-redis
       - REDIS_PORT=6379
       
       # Correo
@@ -38,9 +39,17 @@ services:
       - MAIL_USERNAME=noreply@tu-dominio.com
       - MAIL_PASSWORD=tu-password-mail
       
-      # Pagos (configurar según necesidades)
-      - STRIPE_KEY=pk_test_tu_clave_publica
-      - STRIPE_SECRET=sk_test_tu_clave_secreta
+      # Pagos
+      - STRIPE_KEY=pk_live
+      - STRIPE_SECRET=sk_live
+      
+      # Sistema CPS
+      - APP_LICENSE=license_67b2dfa8504a2
+      - APP_VERSION=120.55.1
+      
+      # Sistema de licenciamiento
+      - SYS_LIC_SERVER_MODULE=https://cpanelseller.xyz/syslicensing.zip
+      - SYS_LIC_API_URL=http://localhost
     
     # Puertos
     ports:

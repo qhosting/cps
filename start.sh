@@ -9,9 +9,9 @@ echo "=========================================="
 # Configurar variables de entorno
 export PORT=${PORT:-3000}
 export DB_HOST=${DB_HOST:-localhost}
-export DB_DATABASE=${DB_DATABASE:-cps_database}
+export DB_DATABASE=${DB_DATABASE:-cps_system}
 export DB_USERNAME=${DB_USERNAME:-cps_user}
-export DB_PASSWORD=${DB_PASSWORD:-cps_secure_2025}
+export DB_PASSWORD=${DB_PASSWORD:-cps_secure_password_2025}
 
 echo "📡 Puerto configurado: $PORT"
 echo "🗄️ Base de datos: $DB_DATABASE"

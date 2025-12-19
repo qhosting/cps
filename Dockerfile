@@ -52,12 +52,12 @@ RUN apt-get update && apt-get install -y \
     nginx \
     gettext-base \
     supervisor \
-    mysql-client \
+    mariadb-client-compat \
     redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensiones PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

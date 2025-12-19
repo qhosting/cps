@@ -151,7 +151,7 @@ RUN chown -R www-data:www-data /var/www \
     && chmod -R 777 /var/www/bootstrap/cache
 
 # Configurar Nginx para puerto 3000
-COPY nginx.easypanel.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Configurar Supervisor para manejar PHP-FPM y Nginx
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf

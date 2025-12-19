@@ -1,49 +1,37 @@
-# Dockerfile para Sistema Laravel con PHP 8.3, ionCube 15.0.0 y MySQL
-# CON VALIDACIÓN AUTOMÁTICA OPTIMIZADA PARA EASYPANEL
+# Dockerfile optimizado para EasyPanel - Puerto 3000
+# Sistema CPS - Gestión de Licencias con Laravel + PHP 8.3 + ionCube
+
 FROM php:8.3-fpm
 
-# Argumentos de construcción para variables de entorno
+# Argumentos de construcción
 ARG APP_NAME="CPS License Management"
 ARG APP_ENV=production
-ARG APP_KEY=""
 ARG APP_DEBUG=false
-ARG APP_URL="https://cps.qhosting.net"
+ARG APP_URL="https://tu-dominio.com"
+ARG PORT=3000
 
-# Base de datos
-ARG DB_CONNECTION=mysql
-ARG DB_HOST=127.0.0.1
-ARG DB_PORT=3306
+# Base de datos y cache
+ARG DB_HOST=localhost
 ARG DB_DATABASE=cps_database
-ARG DB_USERNAME=username
-ARG DB_PASSWORD=password
-
-# Redis
-ARG REDIS_HOST=127.0.0.1
-ARG REDIS_PASSWORD=null
+ARG DB_USERNAME=cps_user
+ARG DB_PASSWORD=cps_secure_2025
+ARG REDIS_HOST=localhost
 ARG REDIS_PORT=6379
 
-# Configuración de correo
+# Configuración de correo y pagos
 ARG MAIL_MAILER=smtp
-ARG MAIL_HOST=mailhog
-ARG MAIL_PORT=1025
-ARG MAIL_USERNAME=null
-ARG MAIL_PASSWORD=null
-ARG MAIL_ENCRYPTION=null
-ARG MAIL_FROM_ADDRESS="hello@example.com"
-ARG MAIL_FROM_NAME="${APP_NAME}"
+ARG MAIL_HOST=localhost
+ARG MAIL_PORT=25
+ARG MAIL_USERNAME=
+ARG MAIL_PASSWORD=
+ARG STRIPE_KEY=your_stripe_key
+ARG STRIPE_SECRET=your_stripe_secret
 
-# Claves de pago
-ARG STRIPE_KEY=your_stripe_public_key
-ARG STRIPE_SECRET=your_stripe_secret_key
-ARG PAYPAL_CLIENT_ID=your_paypal_client_id
-ARG PAYPAL_CLIENT_SECRET=your_paypal_client_secret
-ARG PAYPAL_MODE=sandbox
-
-# Verificar y crear usuario www-data solo si no existe
+# Instalar usuario www-data
 RUN (getent group www-data >/dev/null 2>&1) || groupadd -g 33 www-data && \
     (id -u www-data >/dev/null 2>&1) || useradd -u 33 -g www-data www-data
 
-# Instalar dependencias del sistema (incluyendo nginx y gettext-base para envsubst)
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -55,7 +43,6 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libssl-dev \
     libcurl4-openssl-dev \
-    libmagickwand-dev \
     libwebp-dev \
     libjpeg-dev \
     libpng-dev \
@@ -64,10 +51,13 @@ RUN apt-get update && apt-get install -y \
     procps \
     nginx \
     gettext-base \
+    supervisor \
+    mysql-client \
+    redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensiones de PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+# Instalar extensiones PHP
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -80,67 +70,60 @@ RUN curl -L -o /tmp/ioncube.tar.gz https://downloads.ioncube.com/loader_download
     && cp ioncube/ioncube_loader_lin_8.3.so $PHP_EXT_DIR/ \
     && rm -rf ioncube /tmp/ioncube.tar.gz
 
-# Configurar ionCube en PHP usando ruta dinámica
+# Configurar ionCube
 RUN echo "zend_extension=$(php-config --extension-dir)/ioncube_loader_lin_8.3.so" > /usr/local/etc/php/conf.d/00-ioncube.ini
-
-# Verificar que ionCube está instalado correctamente
-RUN php -v
 
 # Establecer directorio de trabajo
 WORKDIR /var/www
 
-# Copiar archivos de la aplicación
+# Copiar código fuente
 COPY system/ /var/www/
 
-# Crear directorios necesarios con propiedad correcta ANTES de composer install
+# Crear directorios necesarios
 RUN mkdir -p /var/www/bootstrap/cache \
     && mkdir -p /var/www/storage/logs \
-    && mkdir -p /var/www/storage/framework \
     && mkdir -p /var/www/storage/framework/cache \
     && mkdir -p /var/www/storage/framework/sessions \
     && mkdir -p /var/www/storage/framework/views \
     && mkdir -p /var/www/storage/app \
     && chown -R www-data:www-data /var/www \
     && chmod -R 777 /var/www/bootstrap/cache \
-    && chmod -R 777 /var/www/storage/logs \
-    && chmod -R 777 /var/www/storage/framework \
-    && chmod -R 777 /var/www/storage/app
+    && chmod -R 777 /var/www/storage
 
-# Instalar dependencias de PHP con usuario correcto
+# Instalar dependencias Composer
 RUN chown -R www-data:www-data /var/www \
     && sudo -u www-data composer install --optimize-autoloader --no-dev --no-interaction || \
     composer install --optimize-autoloader --no-dev --no-interaction
 
-# Crear archivo .env directamente usando heredoc
+# Crear archivo .env
 RUN cat > /var/www/.env << EOF
 APP_NAME="${APP_NAME}"
 APP_ENV=${APP_ENV}
-APP_KEY=${APP_KEY}
+APP_KEY=
 APP_DEBUG=${APP_DEBUG}
 APP_URL=${APP_URL}
+APP_PORT=${PORT}
 
 LOG_CHANNEL=stack
-LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=debug
 
-DB_CONNECTION=${DB_CONNECTION}
+DB_CONNECTION=mysql
 DB_HOST=${DB_HOST}
-DB_PORT=${DB_PORT}
+DB_PORT=3306
 DB_DATABASE=${DB_DATABASE}
 DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 
-BROADCAST_DRIVER=log
-CACHE_DRIVER=file
+CACHE_DRIVER=redis
 FILESYSTEM_DRIVER=local
 QUEUE_CONNECTION=sync
-SESSION_DRIVER=file
+SESSION_DRIVER=redis
 SESSION_LIFETIME=120
 
 MEMCACHED_HOST=127.0.0.1
 
 REDIS_HOST=${REDIS_HOST}
-REDIS_PASSWORD=${REDIS_PASSWORD}
+REDIS_PASSWORD=null
 REDIS_PORT=${REDIS_PORT}
 
 MAIL_MAILER=${MAIL_MAILER}
@@ -148,8 +131,8 @@ MAIL_HOST=${MAIL_HOST}
 MAIL_PORT=${MAIL_PORT}
 MAIL_USERNAME=${MAIL_USERNAME}
 MAIL_PASSWORD=${MAIL_PASSWORD}
-MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
-MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="noreply@tu-dominio.com"
 MAIL_FROM_NAME="${APP_NAME}"
 
 AWS_ACCESS_KEY_ID=
@@ -158,78 +141,31 @@ AWS_DEFAULT_REGION=us-east-1
 AWS_BUCKET=
 AWS_USE_PATH_STYLE_ENDPOINT=false
 
-PUSHER_APP_ID=
-PUSHER_APP_KEY=
-PUSHER_APP_SECRET=
-PUSHER_APP_CLUSTER=mt1
-
-MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
-MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
-
 STRIPE_KEY=${STRIPE_KEY}
 STRIPE_SECRET=${STRIPE_SECRET}
-PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
-PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET}
-PAYPAL_MODE=${PAYPAL_MODE}
 EOF
 
-# Configurar permisos finales para producción
+# Configurar permisos
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage \
-    && chmod -R 777 /var/www/bootstrap/cache \
-    && chmod -R 777 /var/www/storage/logs \
-    && chmod -R 777 /var/www/storage/framework \
-    && chmod -R 777 /var/www/storage/app
+    && chmod -R 777 /var/www/bootstrap/cache
 
-# ===============================
-# VALIDACIÓN AUTOMÁTICA PARA EASYPANEL
-# ===============================
+# Configurar Nginx para puerto 3000
+COPY nginx.easypanel.conf /etc/nginx/nginx.conf
 
-# Copiar scripts de validación
-RUN mkdir -p /var/www/validation-scripts
-COPY validation-scripts/ /var/www/validation-scripts/
+# Configurar Supervisor para manejar PHP-FPM y Nginx
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Hacer ejecutables los scripts de validación
-RUN chmod +x /var/www/validation-scripts/*.sh
+# Copiar scripts de inicio
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
-# Ejecutar validación automática optimizada para build
-RUN echo "" && \
-    echo "========================================" && \
-    echo "=== EASYPANEL POST-DEPLOY VALIDATION ===" && \
-    echo "===    Validación de Build Docker      ===" && \
-    echo "========================================" && \
-    cd /var/www/validation-scripts && \
-    bash docker_build_validation.sh && \
-    echo "" && \
-    echo "=== VALIDACIÓN DE BUILD COMPLETADA ===" && \
-    echo "✅ Contenedor listo para despliegue" && \
-    echo "🔄 La validación completa se ejecutará al iniciar" && \
-    cd /var/www
-
-# ===============================
-# CONFIGURACIÓN NGINX PARA EASYPANEL
-# ===============================
-
-# Copiar configuración de nginx
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Crear directorio para logs de nginx
-RUN mkdir -p /var/log/nginx && \
-    chown -R www-data:www-data /var/log/nginx
-
-# Copiar entrypoint script
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-# Exponer puerto 3000 (configurable vía variable PORT)
+# Exponer puerto 3000
 EXPOSE 3000
 
-# Healthcheck en puerto 3000
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-3000}/api/health || exit 1
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1
 
-# Usar entrypoint script para configurar puerto dinámicamente
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# Comando de inicio por defecto
-CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]
+# Script de inicio
+CMD ["/usr/local/bin/start.sh"]

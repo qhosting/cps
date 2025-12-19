@@ -21,7 +21,7 @@ echo "🔧 Configurando aplicación..."
 if [ ! -f "/var/www/.env" ] || ! grep -q "APP_KEY=" /var/www/.env || grep -q "APP_KEY=$" /var/www/.env; then
     echo "🔑 Generando APP_KEY..."
     cd /var/www
-    sudo -u www-data php artisan key:generate --force
+    php artisan key:generate --force
     echo "✅ APP_KEY generado"
 fi
 
@@ -29,7 +29,7 @@ fi
 if [ "$APP_ENV" = "production" ]; then
     echo "🔄 Verificando migraciones..."
     cd /var/www
-    sudo -u www-data php artisan migrate:status
+    php artisan migrate:status
     echo "✅ Migraciones verificadas"
 fi
 

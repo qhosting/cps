@@ -92,7 +92,7 @@ RUN mkdir -p /var/www/bootstrap/cache \
 
 # Instalar dependencias Composer
 RUN chown -R www-data:www-data /var/www \
-    && sudo -u www-data composer install --optimize-autoloader --no-dev --no-interaction || \
+    && composer install --optimize-autoloader --no-dev --no-interaction || \
     composer install --optimize-autoloader --no-dev --no-interaction
 
 # Crear archivo .env
